@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Orange Pi提供了芯片厂商释放的原始H6 Android9.0 SDK，但没有提供Orange Pi3 LTS的适配代码，所以原始SDK编译出来的镜像不能在Orange Pi3 LTS上正常启动。本文来教你如何突破这一限制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用全志H6 Android9.0 SDK启动OrangePi 3 LTS">
+<meta property="og:url" content="https://pkemb.com/2022/03/boot-orangepi3lts-from-h6-android9.0-sdk/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="Orange Pi提供了芯片厂商释放的原始H6 Android9.0 SDK，但没有提供Orange Pi3 LTS的适配代码，所以原始SDK编译出来的镜像不能在Orange Pi3 LTS上正常启动。本文来教你如何突破这一限制。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.pkemb.com/image/202203212150948.png">
+<meta property="og:image" content="https://image.pkemb.com/image/202203212247584.png">
+<meta property="og:image" content="https://image.pkemb.com/image/202203212248062.png">
+<meta property="og:image" content="https://image.pkemb.com/image/202203212313364.jpg">
+<meta property="article:published_time" content="2022-03-21T21:27:28.000Z">
+<meta property="article:modified_time" content="2022-07-17T18:32:30.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.pkemb.com/image/202203212150948.png">
+
+<link rel="canonical" href="https://pkemb.com/2022/03/boot-orangepi3lts-from-h6-android9.0-sdk/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用全志H6 Android9.0 SDK启动OrangePi 3 LTS | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2022/03/boot-orangepi3lts-from-h6-android9.0-sdk/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用全志H6 Android9.0 SDK启动OrangePi 3 LTS
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-21 21:27:28" itemprop="dateCreated datePublished" datetime="2022-03-21T21:27:28+00:00">2022-03-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-17 18:32:30" itemprop="dateModified" datetime="2022-07-17T18:32:30+00:00">2022-07-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index"><span itemprop="name">android</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/orangepi3lts/" itemprop="url" rel="index"><span itemprop="name">orangepi3lts</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><code>Orange Pi</code>提供了芯片厂商释放的原始<code>H6 Android9.0 SDK</code>，但没有提供<code>Orange Pi3 LTS</code>的适配代码，所以原始SDK编译出来的镜像不能在<code>Orange Pi3 LTS</code>上正常启动。本文来教你如何突破这一限制。</p>
+<span id="more"></span>
+<h2 id="背景"><a class="header-anchor" href="#背景">¶</a>背景</h2>
+<p>前段时间决定学习Android系统，这就肯定需要一块开发板么，纸上谈兵是不行的。经过一番搜索，要么适配的Android系统版本太低（5或6），要么价格太贵了。经过艰苦的搜索，发现了<code>Orange Pi3 LST</code>这么一款开发板，适配Android9.0，官方店铺价格<code>￥229</code>加8元运费，价格亲民，<s>吃灰也不心疼</s>。马上下单！</p>
+<p><a target="_blank" rel="noopener" href="http://www.orangepi.cn/downloadresourcescn/">Orange Pi官网</a>提供了相关资料的百度云下载地址，在经历几天几夜的挂机下载后，终于将需要的文件都下载下来了。打开用户手册<code>OrangePi_3_LTS_H6_用户手册_v1.8.pdf</code>，通读一遍。在接近结束的时候，发现了下面一段话。真的是吐血的心都有了，只提供芯片原厂释放的原始SDK！！！不提供适配代码！！！</p>
+<p><img src="https://image.pkemb.com/image/202203212150948.png" alt=""></p>
+<p>不撞南墙不回头，按照用户手册的指导搭建好编译环境，经过一个下午的漫长等待，终于编译好了原始Android SDK。烧录到TF卡，上电，直接GG，SDRAM初始化失败。想到只有一个编译好的Android img，不能自己编译，万一耽误以后学习咋办，这个问题还是要尝试解决的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[218]HELLO! BOOT0 is starting!</span><br><span class="line">[222]boot0 commit : de6e50bf43bb48975c66a88b58eef6a7460bf0ef</span><br><span class="line"></span><br><span class="line">[241]set pll start</span><br><span class="line">[244]set pll end</span><br><span class="line">......</span><br><span class="line">[585]MP_PGSR0 IS = 0040005d</span><br><span class="line">[588]BYTE0 GATE ERRO IS = 00000003</span><br><span class="line">[591]BYTE1 GATE ERRO IS = 00000003</span><br><span class="line">[595]BYTE2 GATE ERRO IS = 00000003</span><br><span class="line">[598]BYTE3 GATE ERRO IS = 00000003</span><br><span class="line">[602]scan dram rank&amp;width fail !</span><br><span class="line">[605]initializing SDRAM Fail.</span><br></pre></td></tr></table></figure>
+<h2 id="准备"><a class="header-anchor" href="#准备">¶</a>准备</h2>
+<p>在解决开机失败问题之前，一定要对开机流程有一个大致的了解。经过简单的百度，发现了一篇博客：<a target="_blank" rel="noopener" href="https://blog.csdn.net/wlwl0071986/article/details/47207809">全志平台linux启动流程分析</a>。简单总结一下，就是<code>Boot ROM</code> -&gt; <code>Boot0</code> -&gt; <code>Boot1</code> -&gt; <code>U-Boot</code> &gt; <code>kernel</code>。从正常的开机log看，基本就是这个流程。所以，原始Android SDK在<code>Boot0</code>就启动失败了，问题点定位到了。</p>
+<p>同时，还需要拿到全志H6的芯片资料，这个可以在<a target="_blank" rel="noopener" href="https://linux-sunxi.org/H6">linux-sunxi.org/H6</a>获取，这里有数据手册、用户手册、原始SDK。</p>
+<h2 id="初步分析"><a class="header-anchor" href="#初步分析">¶</a>初步分析</h2>
+<p>Android相关的代码，<code>OrangePi</code>提供了两个压缩包，<code>android.tar.gz</code>和<code>lichee.tar.gz</code>，boot0相关的内容应该是在<code>lichee.tar.gz</code>。经过一番搜索，发现了<code>brandy/basic_loader/boot0</code>目录，这里存储了<code>boot0</code>相关的代码。但是，没有H6的<code>boot0</code>！！！H6是A53内核，有make_a50、make_a67，就是没有make_a53。用grep搜索H6的芯片代码<code>sun50iw6p1</code>，也没有找到任何内容。</p>
+<p>通过以上分析，可以得出结论，<code>OrangePi</code>没有提供Android系统的boot0源代码，而是使用了预编译文件。</p>
+<p>另一边，按照用户手册的指导，为<code>OrangePi3 LTS</code>编译Linux系统，烧录到TF卡之后可以正常启动。也就是说，<code>OrangePi</code>为Linux系统提供了一份可以正常启动的boot0。经过一番搜索，在<code>orangepi-build/u-boot/v2014.07-sun50iw6-linux4.9/sunxi_spl/boot0</code>发现了boot0的源代码和编译好的<code>boot0_sdcard.bin</code>。</p>
+<h2 id="找出预编译的boot0"><a class="header-anchor" href="#找出预编译的boot0">¶</a>找出预编译的boot0</h2>
+<p>前面分析到，Android系统的boot0不是编译出来的，而是使用的预编译文件。关键点要找到这个文件。以下是官方用户手册给出的Android系统编译命令。显然，最后一步的pack命令用来收集所有编译好的文件，打包成img文件。所以要分析pack命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">test@test:~$ cd android</span><br><span class="line">test@test:~/android$ source build/envsetup.sh</span><br><span class="line">test@test:~/android$ lunch petrel_fvd_p1-eng</span><br><span class="line">test@test:~/android$ extract-bsp</span><br><span class="line">test@test:~/android$ make -j8</span><br><span class="line">test@test:~/android$ pack</span><br></pre></td></tr></table></figure>
+<p><code>pack</code>命令是<code>source build/envsetup.sh</code>注册的一个shell函数，可以用命令<code>type pack</code>看到源码。经过追踪，pack命令最终会调用<code>lichee/tools/pack/pack</code>脚本。经过分析pack脚本，在函数<code>do_finish()</code>中，会调用命令<code>dragon image.cfg  sys_partition.fex</code>来打包、生成最终的img文件。image.cfg，看文件名就知道是最终img文件的配置文件。经过find搜索，image.cfg在l<code>ichee/tools/pack/out/image.cfg</code>。打开这个文件，发现如下内容，刚好out目录下面有一个boot0_sdcard.fex文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;filename = &quot;boot0_nand.fex&quot;,   maintype = ITEM_BOOT,         subtype = &quot;BOOT0_0000000000&quot;,&#125;,</span><br><span class="line">&#123;filename = &quot;boot0_sdcard.fex&quot;, maintype = &quot;12345678&quot;,        subtype = &quot;1234567890BOOT_0&quot;,&#125;,</span><br></pre></td></tr></table></figure>
+<p><code>lichee</code>目录是<code>lichee.tar.gz</code>解压出来的，这个压缩包里面没有<code>tools/pack/out</code>目录，说明out目录是编译时某个命令产生的。用grep搜索<code>boot0_sdcard.fex</code>，找到如下关键内容。所以关键点还是在pack脚本。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pack/pack:171:$&#123;RES_DIR&#125;/$&#123;LICHEE_BIN_PATH&#125;/boot0_sdcard_$&#123;PACK_CHIP&#125;.bin:out/boot0_sdcard.fex</span><br><span class="line">pack/pack:311:          mv out/boot0_sdcard-$&#123;OTA_TEST_NAME&#125;.fex        out/boot0_sdcard.fex</span><br><span class="line">pack/pack:517:        programmer_img boot0_sdcard.fex boot_package.fex $&#123;out_img&#125; &gt; /dev/null</span><br><span class="line">pack/pack:710:  update_boot0 boot0_sdcard.fex   sys_config.bin SDMMC_CARD &gt; /dev/null</span><br></pre></td></tr></table></figure>
+<p>进入脚本一顿搜索分析，找到如下关键信息。<code>boot0_sdcard.fex</code>来源于<code>$&#123;RES_DIR&#125;/$&#123;LICHEE_BIN_PATH&#125;/boot0_sdcard_$&#123;PACK_CHIP&#125;.bin</code>，命令<code>update_boot0</code>可能会修改文件<code>boot0_sdcard.fex</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">boot_file_list=(</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">&#123;RES_DIR&#125;/<span class="variable">$&#123;LICHEE_BIN_PATH&#125;</span>/boot0_nand_<span class="variable">$&#123;PACK_CHIP&#125;</span>.bin:out/boot0_nand.fex</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">&#123;RES_DIR&#125;/<span class="variable">$&#123;LICHEE_BIN_PATH&#125;</span>/boot0_sdcard_<span class="variable">$&#123;PACK_CHIP&#125;</span>.bin:out/boot0_sdcard.fex</span></span><br><span class="line">......</span><br><span class="line">    printf &quot;copying boot file\n&quot;</span><br><span class="line">    for file in $&#123;boot_file_list[@]&#125; ; do</span><br><span class="line">        cp -f $(echo $file | sed -e &#x27;s/:/ /g&#x27;) 2&gt;/dev/null</span><br><span class="line">    done</span><br><span class="line">......</span><br><span class="line">    # Those files for Nand or Card</span><br><span class="line">    update_boot0 boot0_nand.fex sys_config.bin NAND &gt; /dev/null</span><br><span class="line">    update_boot0 boot0_sdcard.fex   sys_config.bin SDMMC_CARD &gt; /dev/null</span><br></pre></td></tr></table></figure>
+<p>使用命令<code>find -name boot0_sdcard_*.bin</code>找到文件<code>./pack/chips/sun50iw6p1/bin/boot0_sdcard_sun50iw6p1.bin</code>（还有很多给其他IC用的，这里忽略了）。二进制对比文件<code>boot0_sdcard_sun50iw6p1.bin</code>和<code>boot0_sdcard.fex</code>，确实存在一些差异，确认了<code>update_boot0</code>确实会修改文件<code>boot0_sdcard.fex</code>。</p>
+<h2 id="尝试1：Android使用Linux-boot0"><a class="header-anchor" href="#尝试1：Android使用Linux-boot0">¶</a>尝试1：Android使用Linux boot0</h2>
+<p>前面提到，自己编译的Linux系统可以完美启动。我觉得在<code>boot loader</code>阶段，Android和Linux其实是没有什么区别的。所以尝试使用Linux boot0来启动Android。在boot0的main()函数加了几句log，用来确认是否编译进去。然后重新编译。</p>
+<p>前面分析出来，Android系统的boot0存储在<code>lichee/tools/pack/chips/sun50iw6p1/bin/boot0_sdcard_sun50iw6p1.bin</code>。备份Android原始的boot0，复制Linux的boot0并重命名，最后重新执行pack命令生成新的img文件。</p>
+<p>烧录新的img，上电启动。系统是起来了，但是boot0加的log没有出来。一番查看，原来是从EMMC启动了，也就是说跳过了TF卡中的系统。看来Linux编译出来的boot0，可能在Android系统无法通过某种校验，然后就从EMMC启动了。</p>
+<p>综上，本次尝试失败，两个系统的boot0无法通用。</p>
+<h2 id="尝试2：从官方Android-img提取boot0文件"><a class="header-anchor" href="#尝试2：从官方Android-img提取boot0文件">¶</a>尝试2：从官方Android img提取boot0文件</h2>
+<p><code>OrangePi</code>有提供一个Android镜像文件，可以正常启动。既然img文件是由若干个文件打包而成，那么一定可以解包。但问题就在这，img文件是通过<code>dragon</code>命令打包的，<code>dragon</code>也只提供了编译好的二进制文件，没有提供源代码。所以无法从打包的方向获取img文件的内部结构。</p>
+<p>使用file命令查看img文件，返回data，没有更多的信息。看来file命令也无法识别其具体的文件类型。</p>
+<p>用二进制查看器打开img文件，发现文件头有一个魔法字符串<code>IMAGEWTY</code>，Google这个字符串，发现了如下两个非常有用的网址。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/48872746/what-is-an-imagewty-firmware-format">https://stackoverflow.com/questions/48872746/what-is-an-imagewty-firmware-format</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Ithamar/awutils">https://github.com/Ithamar/awutils</a></li>
+</ul>
+<p><img src="https://image.pkemb.com/image/202203212247584.png" alt=""></p>
+<p><code>awutils</code>提供了一个叫做<code>awimage</code>的工具，可以用来解压img文件。clone到本地，编译成可执行文件，尝试解包，成了。解出来的文件如下图所示。但是解包之后这么多文件，哪一个才是<code>boot0_sdcard.fex</code>呢？<code>dragon</code>命令有一个参数是<code>image.cfg</code>，再去碰碰运气。在<code>boot0_sdcard.fex</code>那一行，可以看到<code>maintype=&quot;12345678&quot;</code>，<code>subtype=&quot;1234567890BOOT_0&quot;</code>。好巧，解包之后存在一个名为<code>12345678_1234567890BOOT_0</code>的文件，且文件的大小也可以对应上，就是它了。</p>
+<p><img src="https://image.pkemb.com/image/202203212248062.png" alt=""></p>
+<p>之前提到过，pack脚本将<code>boot0_sdcard_sun50iw6p1.bin</code>复制为<code>boot0_sdcard.fex</code>后，还用<code>update_boot0</code>命令修改了<code>boot0_sdcard.fex</code>，最终打包到img文件的是<code>update_boot0</code>修改之后的文件。所以提取出来的文件也是<code>update_boot0</code>修改之后的。故要在<code>dragon</code>命令打包的前一刻，将提取出来的文件替换到<code>boot0_sdcard.fex</code>。所以对pack脚本做了如下修改，打包之前复制<code>12345678_1234567890BOOT_0</code>替换到<code>boot0_sdcard.fex</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp -f /path/to/OrangePi_3_LTS_Android9_v1.0.img.dump/12345678_1234567890BOOT_0  boot0_sdcard.fex</span><br><span class="line">dragon image.cfg    sys_partition.fex</span><br></pre></td></tr></table></figure>
+<p>重新执行pack命令打包img文件，烧录，启动成功。虽然启动过程中还有一些error log，但最终还是顺利进入了系统。全志H6原始Android SDK桌面如下。</p>
+<p><img src="https://image.pkemb.com/image/202203212313364.jpg" alt=""></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/install-more-tools-in-git-bash/" rel="prev" title="在 Git Bash 安装更多工具">
+      <i class="fa fa-chevron-left"></i> 在 Git Bash 安装更多工具
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/binder-driver/" rel="next" title="Binder驱动源码阅读">
+      Binder驱动源码阅读 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">初步分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%BE%E5%87%BA%E9%A2%84%E7%BC%96%E8%AF%91%E7%9A%84boot0"><span class="nav-number">4.</span> <span class="nav-text">找出预编译的boot0</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%9D%E8%AF%951%EF%BC%9AAndroid%E4%BD%BF%E7%94%A8Linux-boot0"><span class="nav-number">5.</span> <span class="nav-text">尝试1：Android使用Linux boot0</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%9D%E8%AF%952%EF%BC%9A%E4%BB%8E%E5%AE%98%E6%96%B9Android-img%E6%8F%90%E5%8F%96boot0%E6%96%87%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">尝试2：从官方Android img提取boot0文件</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : 'd234192c0a31a26883710655b7d0ec34',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

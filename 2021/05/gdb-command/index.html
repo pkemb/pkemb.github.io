@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="GDB常用指令及示例。有关GDB更详细的信息，可以参考GDB官方手册。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GDB常用指令">
+<meta property="og:url" content="https://pkemb.com/2021/05/gdb-command/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="GDB常用指令及示例。有关GDB更详细的信息，可以参考GDB官方手册。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-05-16T12:53:56.000Z">
+<meta property="article:modified_time" content="2023-09-19T23:41:02.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://pkemb.com/2021/05/gdb-command/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>GDB常用指令 | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2021/05/gdb-command/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GDB常用指令
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-16 12:53:56" itemprop="dateCreated datePublished" datetime="2021-05-16T12:53:56+00:00">2021-05-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-09-19 23:41:02" itemprop="dateModified" datetime="2023-09-19T23:41:02+00:00">2023-09-19</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>GDB常用指令及示例。有关GDB更详细的信息，可以参考<a target="_blank" rel="noopener" href="https://sourceware.org/gdb/current/onlinedocs/gdb.pdf">GDB官方手册</a>。</p>
+<span id="more"></span>
+<h2 id="启动与退出GDB"><a class="header-anchor" href="#启动与退出GDB">¶</a>启动与退出GDB</h2>
+<p>一般有三种启动<code>gdb</code>的方式。</p>
+<table>
+<thead>
+<tr>
+<th>启动命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gdb program</td>
+<td>在gdb的监控下运行程序program</td>
+</tr>
+<tr>
+<td>gdb program coredump</td>
+<td>同时加载core dump文件，一般用于分析程序崩溃的原因。</td>
+</tr>
+<tr>
+<td>gdb -p pid</td>
+<td>调试正在运行的进程，需要有相关的权限。</td>
+</tr>
+</tbody>
+</table>
+<p><code>gdb</code>启动成功后，会进入到<code>gdb</code>交换界面，有提示符<code>(gdb) </code>。在交换界面中，可以输入一些指令，来对目标程序进行<code>debug</code>。输入指令<code>quit</code>或组合键<code>Ctrl + D</code>可以退出<code>gdb</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+<h2 id="设置断点"><a class="header-anchor" href="#设置断点">¶</a>设置断点</h2>
+<p>断点用于中断程序的运行，这时可以查看程序的当前状态，进行debug。</p>
+<h3 id="break-b"><a class="header-anchor" href="#break-b">¶</a>break ( b )</h3>
+<p><code>break</code>指令用于设置断点，断点位置可以是一个符号，或代码的某一行。下面的示例在第13行和main函数分别设置了一个断点。<code>break</code>指令的缩写是<code>b</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break 13</span><br><span class="line">Breakpoint 1 at 0x804807e: file bubble.s, line 13.</span><br><span class="line">(gdb) break main</span><br><span class="line">Breakpoint 2 at 0x8048074: file bubble.s, line 11.</span><br></pre></td></tr></table></figure>
+<h3 id="watch"><a class="header-anchor" href="#watch">¶</a>watch</h3>
+<p><code>watch</code>指令用于监控表达式的变化。当表达式的值发生变化时，则停止程序。注意，<code>watch</code>只能监控变量，指针或常量地址需要解引用。<code>rwatch</code>监控读操作，<code>awatch</code>监控读写操作。</p>
+<blockquote>
+<p>If you watch for a change in a numerically entered address you need to dereference it, as<br>
+the address itself is just a constant number which will never change. gdb refuses to create<br>
+a watchpoint that watches a never-changing value:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) watch 0x600850</span><br><span class="line">Cannot watch constant value 0x600850.</span><br><span class="line">(gdb) watch *(int *) 0x600850</span><br><span class="line">Watchpoint 1: *(int *) 6293584</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><code>info watchpoints</code> 查看相关信息。</p>
+<h3 id="catch"><a class="header-anchor" href="#catch">¶</a>catch</h3>
+<p>捕获指定事件。常见的事件如下表格所示。<code>tcatch</code>捕获一次后自动删除相关断点。</p>
+<table>
+<thead>
+<tr>
+<th>event</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>catch exec</td>
+<td>调用exec</td>
+</tr>
+<tr>
+<td>catch syscall name/number</td>
+<td>调用系统调用，可以指定名字或编号。</td>
+</tr>
+<tr>
+<td>catch fork</td>
+<td>调用fork</td>
+</tr>
+<tr>
+<td>catch vfork</td>
+<td>调用vfork</td>
+</tr>
+<tr>
+<td>catch load</td>
+<td>加载共享库</td>
+</tr>
+<tr>
+<td>catch unload</td>
+<td>卸载共享库</td>
+</tr>
+<tr>
+<td>catch signal signal/all</td>
+<td>传递信号</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v5.12.10/source/arch/arm/tools/syscall.tbl">arm 系统调用编号查询</a></p>
+</blockquote>
+<h3 id="delete-d"><a class="header-anchor" href="#delete-d">¶</a>delete ( d )</h3>
+<p><code>delete</code>指令用于删除断点，参数是断点号。如果忘记断点对应的断点号，可以用指令<code>info break</code>查看所有的断点。下面的示例删除了断点2。<code>delete</code>指令的缩写是<code>d</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info break</span><br><span class="line">Num     Type           Disp Enb Address    What</span><br><span class="line">1       breakpoint     keep y   0x0804807e bubble.s:13</span><br><span class="line">2       breakpoint     keep y   0x08048074 bubble.s:11</span><br><span class="line">(gdb) delete 2</span><br><span class="line">(gdb) info break</span><br><span class="line">Num     Type           Disp Enb Address    What</span><br><span class="line">1       breakpoint     keep y   0x0804807e bubble.s:13</span><br></pre></td></tr></table></figure>
+<p><code>clear</code>指令也可以删除断点，参数是断点在程序中的位置。</p>
+<h3 id="命中断点后自动执行指令"><a class="header-anchor" href="#命中断点后自动执行指令">¶</a>命中断点后自动执行指令</h3>
+<p>命中断点后，GDB会暂停执行程序。这时可以执行一些GDB命令，调试程序。如果断点会多次名字，每次都手工敲，会浪费很多时间。可以用<code>commands</code>命令为断点设置命令。在<code>&gt;</code>提示符前输入命令，一行一个，输入<code>end</code>结束。<code>commands number</code>表示给指定断点设置命令。</p>
+<p>示例，调用<code>write</code>系统调用时打印backtrace。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) catch syscall write</span><br><span class="line">Catchpoint 1 (syscall &#x27;write&#x27; [1])</span><br><span class="line">(gdb) commands</span><br><span class="line">Type commands for breakpoint(s) 1, one per line.</span><br><span class="line">End with a line saying just &quot;end&quot;.</span><br><span class="line">&gt;bt</span><br><span class="line">&gt;c</span><br><span class="line">&gt;end</span><br><span class="line">(gdb) info breakpoints</span><br><span class="line">Num     Type           Disp Enb Address            What</span><br><span class="line">1       catchpoint     keep y                      syscall &quot;write&quot;</span><br><span class="line">        bt</span><br><span class="line">        c</span><br></pre></td></tr></table></figure>
+<h2 id="运行程序"><a class="header-anchor" href="#运行程序">¶</a>运行程序</h2>
+<h3 id="run-r"><a class="header-anchor" href="#run-r">¶</a>run ( r )</h3>
+<p><code>GDB</code>启动之后，被调试的程序可能处于未运行的状态，需要使用<code>run</code>指令来启动程序的运行。程序启动之后，会在断点处停下来。<code>run</code>指令的缩写是<code>r</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gdb) run</span><br><span class="line">Starting program: /home/pk/asm/bubble</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at bubble.s:13</span><br><span class="line">13              movl $len, %ecx</span><br><span class="line">Current language:  auto; currently asm</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果没有设置断点，程序会一直运行下去。或者在任何可能阻塞程序运行的地方停下来，如等待用户输入。</p>
+</blockquote>
+<h3 id="continue-c"><a class="header-anchor" href="#continue-c">¶</a>continue ( c )</h3>
+<p><code>continue</code>指令用于继续运行程序，直到遇到下列情况：</p>
+<ol>
+<li>遇到断点，程序中断运行。</li>
+<li>程序被阻塞，等待继续运行的条件。如等待用户输入。</li>
+<li>程序正常或异常退出。</li>
+</ol>
+<p><code>continue</code>指令的缩写<code>c</code>。</p>
+<h3 id="next-n"><a class="header-anchor" href="#next-n">¶</a>next ( n )</h3>
+<p>单步执行，不进入子函数。</p>
+<h3 id="step-s"><a class="header-anchor" href="#step-s">¶</a>step ( s )</h3>
+<p>单步执行，进入子函数。</p>
+<h3 id="stepi"><a class="header-anchor" href="#stepi">¶</a>stepi</h3>
+<p>调试内联汇编时，GDB认为asm段是单一语句。可以使用<code>stepi</code>命令进入asm段进行单步执行，单独地执行每条指令。</p>
+<h3 id="指令级别单步"><a class="header-anchor" href="#指令级别单步">¶</a>指令级别单步</h3>
+<p>对于C或其他高级语言编写的程序，单步是以语句为单位。可以使用指令<code>set disassemble-next-line on</code>开启指令级别单步，使用<code>stepi</code>（缩写<code>si</code>）或<code>nexti</code>（缩写<code>ni</code>）单步执行。</p>
+<h2 id="查看寄存器或内存"><a class="header-anchor" href="#查看寄存器或内存">¶</a>查看寄存器或内存</h2>
+<h3 id="print-p"><a class="header-anchor" href="#print-p">¶</a>print ( p )</h3>
+<p>查看寄存器或内存的值，默认是十进制，<code>print/x</code>以十六进制打印，<code>print/o</code>以八进制打印。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(gdb) p $eax</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">1 = 45</span></span><br><span class="line">(gdb) p/x $eax</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">2 = 0x2d</span></span><br><span class="line">(gdb) p/o $eax</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">3 = 055</span></span><br><span class="line">(gdb) p values   # values 是一个变量。</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">4 = 45</span></span><br><span class="line">(gdb) p &amp;values</span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">5 = (&lt;data variable, no debug info&gt; *) 0x80490b4</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>寄存器前面要加<code>$</code>，变量无需前缀；取变量地址需前缀<code>&amp;</code>。这和汇编的语法不同。</p>
+</blockquote>
+<h3 id="examine-x"><a class="header-anchor" href="#examine-x">¶</a>examine ( x )</h3>
+<p><code>x</code>与<code>print</code>指令类似，但支持更多的格式。格式如下：<code>x /nfu address</code></p>
+<ul>
+<li>n 内存单元的个数</li>
+<li>f 显示方式
+<ul>
+<li>x 十六进制</li>
+<li>d 十进制</li>
+<li>u 无符号十进制</li>
+<li>o 八进制</li>
+<li>t 二进制</li>
+<li>a 十六进制</li>
+<li>i 指令</li>
+<li>c 字符</li>
+<li>f 浮点数</li>
+</ul>
+</li>
+<li>u 一个地址单元的长度
+<ul>
+<li>b 单字节</li>
+<li>h 双字节</li>
+<li>w 四字节</li>
+<li>g 八字节</li>
+</ul>
+</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/7xw &amp;values    # 按十六进制显示7个内存单元，每个内存单元4字节</span><br><span class="line">0x80490b4 &lt;values&gt;:     0x0000002d      0x00000022      0x0000005a      0x0000004e</span><br><span class="line">0x80490c4 &lt;values+16&gt;:  0x00000003      0x00000009      0x0000000a</span><br><span class="line">(gdb) x/5i main        # 查看从main开始的5条汇编指令</span><br><span class="line">0x8048074 &lt;main&gt;:       mov    $0x80490b4,%edi</span><br><span class="line">0x8048079 &lt;main+5&gt;:     mov    $0x6,%ebx</span><br><span class="line">0x804807e &lt;main+10&gt;:    mov    $0x6,%ecx</span><br><span class="line">0x8048083 &lt;loop&gt;:       mov    (%edi),%eax</span><br><span class="line">0x8048085 &lt;loop+2&gt;:     cmp    %eax,0x4(%edi)</span><br></pre></td></tr></table></figure>
+<h3 id="display"><a class="header-anchor" href="#display">¶</a>display</h3>
+<p>当程序停止时自动打印表达式的值，指令格式与指令<code>x</code>类似，但是不支持长度。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(gdb) display $pc             # 监控 pc 寄存器</span><br><span class="line">(gdb) display *(&amp;values + 4)  # 监控values数组的第二个值，语法与C语言一样</span><br><span class="line">(gdb) run</span><br><span class="line">Starting program: /home/pk/asm/bubble</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at bubble.s:13</span><br><span class="line">13              movl $len, %ecx</span><br><span class="line">2: *(&amp;&#123;&lt;data variable, no debug info&gt;&#125; 134516916 + 4) = 3</span><br><span class="line">1: $pc = (void (*)()) 0x804807e &lt;main+10&gt;</span><br><span class="line">Current language:  auto; currently asm</span><br><span class="line">(gdb) n</span><br><span class="line">loop () at bubble.s:15</span><br><span class="line">15              movl (%edi), %eax  # load value to eax</span><br><span class="line">2: *(&amp;&#123;&lt;data variable, no debug info&gt;&#125; 134516916 + 4) = 3</span><br><span class="line">1: $pc = (void (*)()) 0x8048083 &lt;loop&gt;   # 自动打印监控的值</span><br></pre></td></tr></table></figure>
+<p>指令<code>info display</code>查看当前会自动打印的表达式。指令<code>undisplay num</code>可用于取消自动打印。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info display</span><br><span class="line">Auto-display expressions now in effect:</span><br><span class="line">Num Enb Expression</span><br><span class="line">2:   y  *(&amp;&#123;&lt;data variable, no debug info&gt;&#125; 134516916 + 4)</span><br><span class="line">1:   y  $pc</span><br><span class="line">(gdb) undisplay 2    # 取消自动打印表达式2</span><br><span class="line">(gdb) info display</span><br><span class="line">Auto-display expressions now in effect:</span><br><span class="line">Num Enb Expression</span><br><span class="line">1:   y  $pc</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+<h3 id="backtrace"><a class="header-anchor" href="#backtrace">¶</a>backtrace</h3>
+<p>查看调用栈。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) backtrace</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">0  loop () at bubble.s:17</span></span><br></pre></td></tr></table></figure>
+<h2 id="源代码"><a class="header-anchor" href="#源代码">¶</a>源代码</h2>
+<h3 id="list-l"><a class="header-anchor" href="#list-l">¶</a>list ( l )</h3>
+<p>查看源代码。默认显示10行，再执行一次显示接下来的10行。如果接一个行号，则显示以此行为中心的10行。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) list 10  # 显示以第10行为中心的10行代码</span><br><span class="line">5</span><br><span class="line">6       .equ len, (values_end - values)/4 -1</span><br><span class="line">7</span><br><span class="line">8       .section .text</span><br><span class="line">9       .global main</span><br><span class="line">10      main:</span><br><span class="line">11              movl $values, %edi</span><br><span class="line">12              movl $len, %ebx</span><br><span class="line">13              movl $len, %ecx</span><br><span class="line">14      loop:</span><br></pre></td></tr></table></figure>
+<h2 id="shell指令"><a class="header-anchor" href="#shell指令">¶</a>shell指令</h2>
+<h3 id="shell"><a class="header-anchor" href="#shell">¶</a>shell</h3>
+<p><code>shell</code>命令可以在<code>gdb</code>环境中直接执行<code>shell</code>指令，而不必退出<code>gdb</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) shell date +&quot;%Y-%m-%d&quot;</span><br><span class="line">2021-05-16</span><br></pre></td></tr></table></figure>
+<h3 id="make"><a class="header-anchor" href="#make">¶</a>make</h3>
+<p>在<code>gdb</code>环境中，可以直接使用<code>make</code>指令，来执行当前目录下的<code>makefile</code>文件。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) make bubble</span><br><span class="line">make: “bubble”是最新的。</span><br></pre></td></tr></table></figure>
+<h2 id="分析coredump"><a class="header-anchor" href="#分析coredump">¶</a>分析coredump</h2>
+<blockquote>
+<p>如果要分析的coredump与主机架构不一致，需要使用交叉工具链中的gdb</p>
+</blockquote>
+<p>使用gdb同时加载可执行文件和coredump文件，然后用<code>backtrace</code>命令打印调用栈，找出导致coredump的代码位置。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gdb elf coredump</span><br><span class="line">......</span><br><span class="line">(gdb) backtrace</span><br></pre></td></tr></table></figure>
+<p>一般可执行文件会依赖非常多的库文件，如果gdb找不到库文件，或找到的库文件不带调试信息，会导致gdb无法准确找到错误点。这时可以用命令<code>info shared library</code>找出依赖的所有库文件，然后找到带调试信息的文件，按照rootfs的路径组织在一起，然后用命令<code>set sysroot</code>切换gdb的库文件查找路径。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info shared library</span><br><span class="line">(gdb) set sysroot</span><br></pre></td></tr></table></figure>
+<h2 id="GDB脚本"><a class="header-anchor" href="#GDB脚本">¶</a>GDB脚本</h2>
+<p>可以将GDB调试命令写在一个文件中，然后使用GDB加载这个文件，可以大大减少输入调试命令的时间，提高调试效率。例如将下面的内容保存为<code>test.gdb</code>，在GDB交互界面使用<code>source test.gdb</code>命令加载GDB脚本。也可以使用<code>--command</code>选项在启动GDB时加载脚本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">set pagination off</span><br><span class="line"></span><br><span class="line">catch syscall write</span><br><span class="line">commands</span><br><span class="line">    bt</span><br><span class="line">    c</span><br><span class="line">    end</span><br><span class="line">run</span><br><span class="line">quit</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb --batch --command=test.gdb --args your_program [pram...]</span><br></pre></td></tr></table></figure>
+<p>扩展资料：<a target="_blank" rel="noopener" href="https://github.com/gdbinit/Gdbinit/blob/master/gdbinit">gdbinit</a></p>
+<h2 id="GDB小技巧"><a class="header-anchor" href="#GDB小技巧">¶</a>GDB小技巧</h2>
+<h3 id="代码补全"><a class="header-anchor" href="#代码补全">¶</a>代码补全</h3>
+<p>在<code>gdb</code>环境中，如果忘记了指令，或者指令比较长，可以尝试敲<code>tab</code>键，用于提示匹配的指令，或快速输入指令。</p>
+<p>如果当前已经输入的内容，只会匹配到一个指令，敲一下<code>tab</code>，剩下的内容会自动补全；如果匹配两个或多个指令，敲两下<code>tab</code>，会输出匹配的所有指令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) con[tab][tab]</span><br><span class="line">condition  continue</span><br></pre></td></tr></table></figure>
+<h3 id="自动加载共享库"><a class="header-anchor" href="#自动加载共享库">¶</a>自动加载共享库</h3>
+<p>如果使用命令<code>gdb command</code>启动gdb，则gdb不会加载共享库。原因如下。需要执行<code>run</code>命令启动程序，gdb才会加载共享库。</p>
+<blockquote>
+<p><code>gdb</code> automatically loads symbol definitions from shared libraries when you use the <code>run</code><br>
+command, or when you examine a core file. (Before you issue the <code>run</code> command, gdb<br>
+does not understand references to a function in a shared library, however—unless you are<br>
+debugging a core file).</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/elf-analysis-command/" rel="prev" title="ELF分析常用指令">
+      <i class="fa fa-chevron-left"></i> ELF分析常用指令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/shell-script/" rel="next" title="shell脚本">
+      shell脚本 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E4%B8%8E%E9%80%80%E5%87%BAGDB"><span class="nav-number">1.</span> <span class="nav-text">启动与退出GDB</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">设置断点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#break-b"><span class="nav-number">2.1.</span> <span class="nav-text">break ( b )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#watch"><span class="nav-number">2.2.</span> <span class="nav-text">watch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#catch"><span class="nav-number">2.3.</span> <span class="nav-text">catch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#delete-d"><span class="nav-number">2.4.</span> <span class="nav-text">delete ( d )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%B8%AD%E6%96%AD%E7%82%B9%E5%90%8E%E8%87%AA%E5%8A%A8%E6%89%A7%E8%A1%8C%E6%8C%87%E4%BB%A4"><span class="nav-number">2.5.</span> <span class="nav-text">命中断点后自动执行指令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%A8%8B%E5%BA%8F"><span class="nav-number">3.</span> <span class="nav-text">运行程序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#run-r"><span class="nav-number">3.1.</span> <span class="nav-text">run ( r )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#continue-c"><span class="nav-number">3.2.</span> <span class="nav-text">continue ( c )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#next-n"><span class="nav-number">3.3.</span> <span class="nav-text">next ( n )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#step-s"><span class="nav-number">3.4.</span> <span class="nav-text">step ( s )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stepi"><span class="nav-number">3.5.</span> <span class="nav-text">stepi</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E7%BA%A7%E5%88%AB%E5%8D%95%E6%AD%A5"><span class="nav-number">3.6.</span> <span class="nav-text">指令级别单步</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%AF%84%E5%AD%98%E5%99%A8%E6%88%96%E5%86%85%E5%AD%98"><span class="nav-number">4.</span> <span class="nav-text">查看寄存器或内存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#print-p"><span class="nav-number">4.1.</span> <span class="nav-text">print ( p )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#examine-x"><span class="nav-number">4.2.</span> <span class="nav-text">examine ( x )</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#display"><span class="nav-number">4.3.</span> <span class="nav-text">display</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#backtrace"><span class="nav-number">4.4.</span> <span class="nav-text">backtrace</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">源代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#list-l"><span class="nav-number">5.1.</span> <span class="nav-text">list ( l )</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shell%E6%8C%87%E4%BB%A4"><span class="nav-number">6.</span> <span class="nav-text">shell指令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shell"><span class="nav-number">6.1.</span> <span class="nav-text">shell</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#make"><span class="nav-number">6.2.</span> <span class="nav-text">make</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90coredump"><span class="nav-number">7.</span> <span class="nav-text">分析coredump</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E8%84%9A%E6%9C%AC"><span class="nav-number">8.</span> <span class="nav-text">GDB脚本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GDB%E5%B0%8F%E6%8A%80%E5%B7%A7"><span class="nav-number">9.</span> <span class="nav-text">GDB小技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A1%A5%E5%85%A8"><span class="nav-number">9.1.</span> <span class="nav-text">代码补全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%8A%A0%E8%BD%BD%E5%85%B1%E4%BA%AB%E5%BA%93"><span class="nav-number">9.2.</span> <span class="nav-text">自动加载共享库</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : '888f5cc07ff8fc6265c8e6ff81f4895e',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="根据使用场景，汇总列出相应的git指令，便于查阅。主要参考了《Pro Git》。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git常用命令">
+<meta property="og:url" content="https://pkemb.com/2021/09/git-command/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="根据使用场景，汇总列出相应的git指令，便于查阅。主要参考了《Pro Git》。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://git-scm.com/book/en/v2/images/lifecycle.png">
+<meta property="article:published_time" content="2021-09-19T15:08:16.000Z">
+<meta property="article:modified_time" content="2022-03-26T21:07:03.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://git-scm.com/book/en/v2/images/lifecycle.png">
+
+<link rel="canonical" href="https://pkemb.com/2021/09/git-command/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>git常用命令 | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2021/09/git-command/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          git常用命令
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-09-19 15:08:16" itemprop="dateCreated datePublished" datetime="2021-09-19T15:08:16+00:00">2021-09-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-26 21:07:03" itemprop="dateModified" datetime="2022-03-26T21:07:03+00:00">2022-03-26</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>根据使用场景，汇总列出相应的git指令，便于查阅。主要参考了《<a target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v2">Pro Git</a>》。</p>
+<span id="more"></span>
+<h2 id="获取帮助"><a class="header-anchor" href="#获取帮助">¶</a>获取帮助</h2>
+<ul>
+<li>仔细查看git给出的输出提示
+<ul>
+<li>如果不知道下一步应该执行什么命令，不妨试试<code>git status</code></li>
+</ul>
+</li>
+<li>git [command] -h</li>
+<li>git help [command]</li>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/docs">在线手册</a></li>
+<li>Google</li>
+</ul>
+<h2 id="基本概念"><a class="header-anchor" href="#基本概念">¶</a>基本概念</h2>
+<ul>
+<li>工作区</li>
+<li>暂存区（index or stage）</li>
+<li>版本库（.git目录）</li>
+<li>git是记录文件的快照，而不是差异</li>
+<li>git对象：commit对象、tree对象、blob对象、tag对象</li>
+<li>SHA1
+<ul>
+<li><a href="#sha1%E7%9A%84%E7%94%9F%E6%88%90%E6%96%B9%E6%B3%95">SHA1的生成方法</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="获取仓库"><a class="header-anchor" href="#获取仓库">¶</a>获取仓库</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git init</td>
+<td>在当前目录初始化一个空的仓库。</td>
+</tr>
+<tr>
+<td>git init --bare</td>
+<td>初始化一个裸仓库。</td>
+</tr>
+<tr>
+<td>git clone url</td>
+<td>从服务器克隆一个仓库。</td>
+</tr>
+<tr>
+<td>git clone url --bare</td>
+<td>克隆一个裸仓库。</td>
+</tr>
+<tr>
+<td>git clone url -b branch</td>
+<td>克隆仓库并切换到指定branch。</td>
+</tr>
+<tr>
+<td>git clone url dir</td>
+<td>指定仓库的文件名。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="配置"><a class="header-anchor" href="#配置">¶</a>配置</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git config [–system/–global]</td>
+<td>git config默认配置所在的仓库。<br>–system为系统中所有的用户配置，<br>–global为当前用户的所有仓库配置。<br>优先级local&gt;global&gt;system。</td>
+</tr>
+<tr>
+<td>git config [–system/–global] -e</td>
+<td>打开相应的配置文件，手动编辑。</td>
+</tr>
+<tr>
+<td>git config --global <a target="_blank" rel="noopener" href="http://user.name">user.name</a> “username”</td>
+<td>设置用户名</td>
+</tr>
+<tr>
+<td>git config --global user.email “name@host”</td>
+<td>设置邮箱</td>
+</tr>
+<tr>
+<td>git config --global core.editor vi</td>
+<td>设置默认的编辑器</td>
+</tr>
+<tr>
+<td>git config --global core.autocrlf true</td>
+<td>提交时：回车换行 -&gt; 换行，检出时：换行 -&gt; 回车换行。<br>windows系统建议设置为true。</td>
+</tr>
+<tr>
+<td>git config --global core.autoctlf input</td>
+<td>提交时：回车换行 -&gt; 换行，检出时：不转换。<br>Linux系统建议设置为input。</td>
+</tr>
+<tr>
+<td>git config remote.name.push refs/heads/*:refs/for/*</td>
+<td>push代码时，推送到服务器的refs/for分支。name是服务器的名字。</td>
+</tr>
+<tr>
+<td>git config --global <a target="_blank" rel="noopener" href="http://alias.co">alias.co</a> checkout</td>
+<td>设置checkout子命令的别名为co</td>
+</tr>
+<tr>
+<td>git config --global <a target="_blank" rel="noopener" href="http://alias.br">alias.br</a> branch</td>
+<td>设置branch子命令的别名为br</td>
+</tr>
+<tr>
+<td>git config --global <a target="_blank" rel="noopener" href="http://alias.ci">alias.ci</a> commit</td>
+<td>设置commit子命令的别名为ci</td>
+</tr>
+<tr>
+<td>git config --global <a target="_blank" rel="noopener" href="http://alias.st">alias.st</a> status</td>
+<td>设置status子命令的别名为st</td>
+</tr>
+<tr>
+<td>git config --global alias.unstage ‘reset HEAD --’</td>
+<td>设置unstage别名，取消暂存指定文件<br>git unstage filename</td>
+</tr>
+<tr>
+<td>git config --global alias.visual ‘!gitk’</td>
+<td>设置别名调用外部命令，需要添加一个感叹号</td>
+</tr>
+<tr>
+<td>git config --global core.quotepath false</td>
+<td>控制路径的显示格式。设置为false，则可以正常显示中文。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="文件状态变化周期"><a class="header-anchor" href="#文件状态变化周期">¶</a>文件状态变化周期</h2>
+<p><code>git status</code>查看当前仓库的状态。</p>
+<p><img src="https://git-scm.com/book/en/v2/images/lifecycle.png" alt=""></p>
+<h2 id="追踪文件"><a class="header-anchor" href="#追踪文件">¶</a>追踪文件</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git add filename</td>
+<td>将指定文件添加到版本库。</td>
+</tr>
+<tr>
+<td>git add .</td>
+<td>将当前目录有修改或未追踪的文件添加到版本库。</td>
+</tr>
+<tr>
+<td>git add -A</td>
+<td>将当前仓库有修改或未追踪的文件添加到版本库。</td>
+</tr>
+<tr>
+<td>git add -f</td>
+<td>忽略.gitignore文件</td>
+</tr>
+</tbody>
+</table>
+<h2 id="提交修改"><a class="header-anchor" href="#提交修改">¶</a>提交修改</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git commit</td>
+<td>将暂存区的内容提交到版本库，会打开默认编辑器编辑提交说明。</td>
+</tr>
+<tr>
+<td>git commit -m</td>
+<td>在命令行中指定提交说明，而不是进入编辑器。</td>
+</tr>
+<tr>
+<td>git commit --amend</td>
+<td>对最近的一笔提交进行修改（追加修改）</td>
+</tr>
+<tr>
+<td>git commit -s</td>
+<td>在提交记录中加入“Signed-off-by:”</td>
+</tr>
+<tr>
+<td>git commit --allow-empty</td>
+<td>允许空白提交</td>
+</tr>
+<tr>
+<td>git commit --reset-author</td>
+<td>同步修改作者的ID</td>
+</tr>
+<tr>
+<td>git commit --amend</td>
+<td>向最后一笔修改追加修改</td>
+</tr>
+</tbody>
+</table>
+<h2 id="查看修改记录"><a class="header-anchor" href="#查看修改记录">¶</a>查看修改记录</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git log</td>
+<td>按时间先后显示当前分支的提交记录，包含提交ID、作者、时间、提交说明等内容。</td>
+</tr>
+<tr>
+<td>git log -p</td>
+<td>显示每次提交修改的内容。</td>
+</tr>
+<tr>
+<td>git log --oneline</td>
+<td>一行只显示一个提交，默认包含提交ID和提交说明。</td>
+</tr>
+<tr>
+<td>git log --graph</td>
+<td>图形化显示，可以直观显示分支切换和合并，通过与<code>--oneline</code>一起使用。</td>
+</tr>
+<tr>
+<td>git log --stat</td>
+<td>显示简略统计信息。</td>
+</tr>
+<tr>
+<td>git log -[n]</td>
+<td>仅显示最近的<code>n</code>条提交</td>
+</tr>
+<tr>
+<td>git log --after=“2021-06-01”</td>
+<td>查看从2021年6月1日开始的提交</td>
+</tr>
+<tr>
+<td>git log --before=“2021-06-01”</td>
+<td>查看从2021年6月1日之前的提交</td>
+</tr>
+<tr>
+<td>git log --grep “text”</td>
+<td>仅显示提交说明包含<code>text</code>字符串的提交</td>
+</tr>
+<tr>
+<td>git log --author=“author”</td>
+<td>仅显示指定作者的提交</td>
+</tr>
+<tr>
+<td>git reflog</td>
+<td>查看本地仓库的操作记录。找回修改的绝妙办法。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="查看修改内容"><a class="header-anchor" href="#查看修改内容">¶</a>查看修改内容</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git diff</td>
+<td>查看工作区和暂存区的差异</td>
+</tr>
+<tr>
+<td>git diff HEAD</td>
+<td>查看工作区和版本库的差异</td>
+</tr>
+<tr>
+<td>git diff --cached</td>
+<td>查看暂存区和版本库的差异</td>
+</tr>
+<tr>
+<td>git show ref</td>
+<td>查看指定提交的修改内容。<code>ref</code>可以是commit id、tag、分支名等等。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="patch"><a class="header-anchor" href="#patch">¶</a>patch</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git diff &gt; xxx.patch</td>
+<td>如果修改没有提交，使用此方法。</td>
+</tr>
+<tr>
+<td>git apply xxx.patch</td>
+<td>应用patch</td>
+</tr>
+<tr>
+<td>git format-patch -[n]</td>
+<td>将最近n笔提交生成patch文件</td>
+</tr>
+<tr>
+<td>git am xxx.patch</td>
+<td>应用format-patch生成的patch文件，会直接产生一笔提交，无需add/commit。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="分支"><a class="header-anchor" href="#分支">¶</a>分支</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git branch</td>
+<td>列出仓库的所有本地分支，当前所在分支会用星号标出来</td>
+</tr>
+<tr>
+<td>git branch [-v</td>
+<td>-vv]</td>
+</tr>
+<tr>
+<td>git branch -a</td>
+<td>列出所有分支，包括远程分支，与-v搭配更香</td>
+</tr>
+<tr>
+<td>git branch [name]</td>
+<td>创建新分支，指向当前commit</td>
+</tr>
+<tr>
+<td>git branch [name] [ref]</td>
+<td>在指定commit创建新分支</td>
+</tr>
+<tr>
+<td>git checkout [name]</td>
+<td>切换到指定分支，会更改工作区的内容</td>
+</tr>
+<tr>
+<td>git checkout -b [name] [ref]</td>
+<td>创建新分支，并切换到新分支。ref可选。</td>
+</tr>
+<tr>
+<td>git checkout -b [name] [remote]/[name]</td>
+<td>为远程分支创建本地分支，并追踪远程分支</td>
+</tr>
+<tr>
+<td>git branch -u [remote/branch]</td>
+<td>设置当前所在分支的上游分支</td>
+</tr>
+<tr>
+<td>git branch -u [remote/branch] [branch]</td>
+<td>设置指定分支的上游分支</td>
+</tr>
+<tr>
+<td>git merge [name]</td>
+<td>将指定分支合并到当前分支</td>
+</tr>
+<tr>
+<td>git branch -d [name]</td>
+<td>删除已经merge的指定分支。-D强制删除</td>
+</tr>
+<tr>
+<td>git push [remote] --delete [name]</td>
+<td>删除远程分支</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tag"><a class="header-anchor" href="#tag">¶</a>tag</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git tag</td>
+<td>列出所有的标签</td>
+</tr>
+<tr>
+<td>git tag -l ‘xxx’</td>
+<td>按照通配符列出匹配的标签</td>
+</tr>
+<tr>
+<td>git tag -a [tagname] -m “tag msg”</td>
+<td>在HEAD指向的提交创建<code>附注</code>标签</td>
+</tr>
+<tr>
+<td>git tag [tagname]</td>
+<td>在HEAD指向的提交创建<code>轻量</code>标签，不使用-a、-s、-m选项，只需提供标签名字</td>
+</tr>
+<tr>
+<td>git tag [tagname] [ref]</td>
+<td>在指定提交创建一个标签</td>
+</tr>
+<tr>
+<td>git tag -d [tagname]</td>
+<td>删除指定标签</td>
+</tr>
+<tr>
+<td>git push <remote> [tagname]</td>
+<td>推送指定tag到远程服务器</td>
+</tr>
+<tr>
+<td>git push <remote> --tags</td>
+<td>推送所有tag到远程服务器</td>
+</tr>
+</tbody>
+</table>
+<h2 id="remote"><a class="header-anchor" href="#remote">¶</a>remote</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git remote -v</td>
+<td>查看远程仓库的简写及其对应的URL</td>
+</tr>
+<tr>
+<td>git remote show <remote></td>
+<td>查看远程仓库更详细的信息</td>
+</tr>
+<tr>
+<td>git remote add <shortname> <url></td>
+<td>添加一个远程仓库</td>
+</tr>
+<tr>
+<td>git remote remove <remote></td>
+<td>删除一个远程仓库</td>
+</tr>
+<tr>
+<td>git remote rename <old> <new></td>
+<td>重命名远程仓库</td>
+</tr>
+<tr>
+<td>git fetach <remote></td>
+<td>从远程仓库下载本地没有的数据，不会自动merge</td>
+</tr>
+<tr>
+<td>git pull <remote></td>
+<td>从远程仓库下载本地没有的数据，并自动merge</td>
+</tr>
+<tr>
+<td>git push <remote> <branch></td>
+<td>将指定分支推送到远程服务器。<br>默认推送到同名分支，可用冒号指定推送到远程分支</td>
+</tr>
+<tr>
+<td>git push <remote> [tagname]</td>
+<td>推送指定tag到远程服务器</td>
+</tr>
+<tr>
+<td>git push <remote> --tags</td>
+<td>推送所有tag到远程服务器</td>
+</tr>
+</tbody>
+</table>
+<h2 id="选择提交"><a class="header-anchor" href="#选择提交">¶</a>选择提交</h2>
+<p>选择单个提交</p>
+<ul>
+<li>40个字符的SHA1</li>
+<li>SHA1的前几个字符（至少4个）且没有歧义</li>
+<li>分支名，分支的最新提交</li>
+<li>tag</li>
+<li>父提交
+<ul>
+<li>xxxx^：第一父提交</li>
+<li>xxxx^2：第二父提交，仅merge提交才有</li>
+</ul>
+</li>
+<li>祖先提交
+<ul>
+<li>xxxx~：第一父提交，等价于xxxx^</li>
+<li>xxxx~~或xxxx~2：第一父提交的第一父提交</li>
+</ul>
+</li>
+</ul>
+<p>提交区间</p>
+<ul>
+<li>双点：选出在一个分支中而不在另一个分支中的提交
+<ul>
+<li>master…experiment：在 experiment 分支中而不在 master 分支中的提交</li>
+<li>origin/master…HEAD：在当前分支中而不在远程 origin 中的提交</li>
+</ul>
+</li>
+<li>三点：两个引用<code>之一</code>包含但又不被两者同时包含的提交</li>
+</ul>
+<h2 id="rebase"><a class="header-anchor" href="#rebase">¶</a>rebase</h2>
+<ul>
+<li>将提交到某一分支上的所有修改都<code>移</code>至另一分支上</li>
+<li>变基完成之后，需要快进merge</li>
+<li>如果提交存在于你的仓库之外，而别人可能基于这些提交进行开发，那么不要执行变基。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git rebase [basebranch]</td>
+<td>将当前branch的修改都rebase到<code>basebranch</code></td>
+</tr>
+<tr>
+<td>git rebase [basebranch] [topicbranch]</td>
+<td>将<code>topicbranch</code>的修改rebase到<code>basebranch</code></td>
+</tr>
+<tr>
+<td>git rebase --onto [newbase] [basebranch] [topicbranch]</td>
+<td>相比上一个，rebase的目标分支由–onto选项指定</td>
+</tr>
+<tr>
+<td>git rebase -i</td>
+<td>交互式变基，主要功能有改写commit msg、追加修改、重新排序提交、压缩提交、拆分提交。<br>不要对服务器上的修改进行交互式变基。</td>
+</tr>
+<tr>
+<td>git rebase --continue</td>
+<td>继续变基</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cherry-pick"><a class="header-anchor" href="#cherry-pick">¶</a>cherry-pick</h2>
+<h2 id="reset与checkout"><a class="header-anchor" href="#reset与checkout">¶</a>reset与checkout</h2>
+<p>为了更好的理解reset和checkout，首先需要明确，git所有的命令都是操作三棵树。</p>
+<table>
+<thead>
+<tr>
+<th>树</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HEAD</td>
+<td>上一次提交的快照，下一次提交的父结点。该分支上的最后一次提交的快照</td>
+</tr>
+<tr>
+<td>Index</td>
+<td>预期的下一次提交的快照</td>
+</tr>
+<tr>
+<td>Working Directory</td>
+<td>沙盒</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>HEAD</th>
+<th>Index</th>
+<th>Workdir</th>
+<th>WD Safe?</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Commit level</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>reset --soft [commit]</td>
+<td>REF</td>
+<td>NO</td>
+<td>NO</td>
+<td>YES</td>
+<td>仅移动HEAD分支的指向，不改变暂存区和工作区<br>撤销commit，回滚到了git commit之前</td>
+</tr>
+<tr>
+<td>reset [commit]</td>
+<td>REF</td>
+<td>YES</td>
+<td>NO</td>
+<td>YES</td>
+<td>移动HEAD分支的指向，使索引看起来像HEAD，不改变工作区<br>回滚到了git add和git commit之前</td>
+</tr>
+<tr>
+<td>reset --hard [commit]</td>
+<td>REF</td>
+<td>YES</td>
+<td>YES</td>
+<td>NO</td>
+<td>移动HEAD分支的指向，使索引看起来像HEAD，强制更改工作目录。</td>
+</tr>
+<tr>
+<td>checkout [commit]</td>
+<td>HEAD</td>
+<td>YES</td>
+<td>YES</td>
+<td>YES</td>
+<td>移动HEAD自身来指向另一个分支，并更新暂存区和工作区。</td>
+</tr>
+<tr>
+<td>File Level</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>reset [commit] – [paths]</td>
+<td>NO</td>
+<td>YES</td>
+<td>NO</td>
+<td>YES</td>
+<td>从[commit]复制指定文件到暂存区</td>
+</tr>
+<tr>
+<td>checkout [commit] – [paths]</td>
+<td>NO</td>
+<td>YES</td>
+<td>YES</td>
+<td>NO</td>
+<td>从指定[commit]复制文件到暂存区和工作区</td>
+</tr>
+</tbody>
+</table>
+<h2 id="实用工具"><a class="header-anchor" href="#实用工具">¶</a>实用工具</h2>
+<h3 id="stash"><a class="header-anchor" href="#stash">¶</a>stash</h3>
+<h3 id="clean"><a class="header-anchor" href="#clean">¶</a>clean</h3>
+<h3 id="blame"><a class="header-anchor" href="#blame">¶</a>blame</h3>
+<h3 id="bisect"><a class="header-anchor" href="#bisect">¶</a>bisect</h3>
+<h3 id="bundle"><a class="header-anchor" href="#bundle">¶</a>bundle</h3>
+<h2 id="submodule"><a class="header-anchor" href="#submodule">¶</a>submodule</h2>
+<h2 id="底层命令"><a class="header-anchor" href="#底层命令">¶</a>底层命令</h2>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>git cat-file -t</td>
+<td></td>
+</tr>
+<tr>
+<td>git cat-file -p</td>
+<td></td>
+</tr>
+<tr>
+<td>git rev-parse --show-toplevel</td>
+<td>显示工作区根目录</td>
+</tr>
+<tr>
+<td>git rev-parse --show-prefix</td>
+<td>相对于工作区根目录的相对目录</td>
+</tr>
+<tr>
+<td>git rev-parse --show-cdup</td>
+<td>显示从当前目录后退到工作区的根的深度</td>
+</tr>
+<tr>
+<td>git ls-tree</td>
+<td></td>
+</tr>
+<tr>
+<td>git ls-files</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="SHA1的生成方法"><a class="header-anchor" href="#SHA1的生成方法">¶</a>SHA1的生成方法</h3>
+<h4 id="commit对象"><a class="header-anchor" href="#commit对象">¶</a>commit对象</h4>
+<ol>
+<li>计算提交信息包含的字符数
+<ul>
+<li>git cat-file commit HEAD | wc -c</li>
+</ul>
+</li>
+<li>在提交信息的前面加上<code>commit &lt;leng&gt;&lt;null&gt;</code>
+<ul>
+<li>&lt;leng&gt; 是第一步计算出来的长度</li>
+<li>&lt;null&gt; 是空字符</li>
+<li>(printf “commit &lt;leng&gt;\000”; git cat-file commit HEAD) | sha1sum</li>
+</ul>
+</li>
+</ol>
+<h4 id="blob对象"><a class="header-anchor" href="#blob对象">¶</a>blob对象</h4>
+<ol>
+<li>计算文件包含的字符数
+<ul>
+<li>git cat-file blob HEAD:filename | wc -c</li>
+</ul>
+</li>
+<li>在提交信息的前面加上<code>blob &lt;leng&gt;&lt;null&gt;</code>
+<ul>
+<li>&lt;leng&gt; 是第一步计算出来的长度</li>
+<li>&lt;null&gt; 是空字符</li>
+<li>(printf “blob &lt;leng&gt;\000”; git cat-file blob HEAD:filename) | sha1sum</li>
+</ul>
+</li>
+</ol>
+<h4 id="tree对象"><a class="header-anchor" href="#tree对象">¶</a>tree对象</h4>
+<ol>
+<li>计算tree包含的字符数
+<ul>
+<li>git cat-file tree HEAD^{tree} | wc -c</li>
+</ul>
+</li>
+<li>在提交信息的前面加上<code>tree &lt;leng&gt;&lt;null&gt;</code>
+<ul>
+<li>&lt;leng&gt; 是第一步计算出来的长度</li>
+<li>&lt;null&gt; 是空字符</li>
+<li>(printf “tree &lt;leng&gt;\000”; git cat-file tree HEAD^{tree}) | sha1sum</li>
+</ul>
+</li>
+</ol>
+<h2 id="技巧"><a class="header-anchor" href="#技巧">¶</a>技巧</h2>
+<h3 id="命令提示符显示分支"><a class="header-anchor" href="#命令提示符显示分支">¶</a>命令提示符显示分支</h3>
+<p>在<code>PS1</code>环境变量中加入如下内容，一般是放在<code>\w</code>或<code>\W</code>的后面。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\[\033[36m\]`__git_ps1`\[\033[0m\]</span><br></pre></td></tr></table></figure>
+<p>效果如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pk@localhost:blog (master)$</span><br></pre></td></tr></table></figure>
+<p>在shell执行如下命令，会在<code>~/.bashrc</code>追加一条命令，这条指令会在现有的<code>PS1</code>后面追加<code>__git_ps1</code>。避免了手工修改<code>PS1</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export PS1=&quot;$(echo $PS1 | sed &quot;s/\\\\\\\$[ \t]*$//g&quot;)\[\033[36m\]&quot;\`__git_ps1\`&quot;\[\033[0m\]\\$ &quot;&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/use-strace-monitor-syscall/" rel="prev" title="使用strace监控系统调用">
+      <i class="fa fa-chevron-left"></i> 使用strace监控系统调用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/09/calibre-python-api/" rel="next" title="calibre python 接口">
+      calibre python 接口 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%B8%AE%E5%8A%A9"><span class="nav-number">1.</span> <span class="nav-text">获取帮助</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E4%BB%93%E5%BA%93"><span class="nav-number">3.</span> <span class="nav-text">获取仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%8A%B6%E6%80%81%E5%8F%98%E5%8C%96%E5%91%A8%E6%9C%9F"><span class="nav-number">5.</span> <span class="nav-text">文件状态变化周期</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%BD%E8%B8%AA%E6%96%87%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">追踪文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4%E4%BF%AE%E6%94%B9"><span class="nav-number">7.</span> <span class="nav-text">提交修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E4%BF%AE%E6%94%B9%E8%AE%B0%E5%BD%95"><span class="nav-number">8.</span> <span class="nav-text">查看修改记录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E4%BF%AE%E6%94%B9%E5%86%85%E5%AE%B9"><span class="nav-number">9.</span> <span class="nav-text">查看修改内容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#patch"><span class="nav-number">10.</span> <span class="nav-text">patch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%94%AF"><span class="nav-number">11.</span> <span class="nav-text">分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tag"><span class="nav-number">12.</span> <span class="nav-text">tag</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#remote"><span class="nav-number">13.</span> <span class="nav-text">remote</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E6%8B%A9%E6%8F%90%E4%BA%A4"><span class="nav-number">14.</span> <span class="nav-text">选择提交</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rebase"><span class="nav-number">15.</span> <span class="nav-text">rebase</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cherry-pick"><span class="nav-number">16.</span> <span class="nav-text">cherry-pick</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reset%E4%B8%8Echeckout"><span class="nav-number">17.</span> <span class="nav-text">reset与checkout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="nav-number">18.</span> <span class="nav-text">实用工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#stash"><span class="nav-number">18.1.</span> <span class="nav-text">stash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clean"><span class="nav-number">18.2.</span> <span class="nav-text">clean</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#blame"><span class="nav-number">18.3.</span> <span class="nav-text">blame</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bisect"><span class="nav-number">18.4.</span> <span class="nav-text">bisect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bundle"><span class="nav-number">18.5.</span> <span class="nav-text">bundle</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#submodule"><span class="nav-number">19.</span> <span class="nav-text">submodule</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%95%E5%B1%82%E5%91%BD%E4%BB%A4"><span class="nav-number">20.</span> <span class="nav-text">底层命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SHA1%E7%9A%84%E7%94%9F%E6%88%90%E6%96%B9%E6%B3%95"><span class="nav-number">20.1.</span> <span class="nav-text">SHA1的生成方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#commit%E5%AF%B9%E8%B1%A1"><span class="nav-number">20.1.1.</span> <span class="nav-text">commit对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#blob%E5%AF%B9%E8%B1%A1"><span class="nav-number">20.1.2.</span> <span class="nav-text">blob对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tree%E5%AF%B9%E8%B1%A1"><span class="nav-number">20.1.3.</span> <span class="nav-text">tree对象</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E5%B7%A7"><span class="nav-number">21.</span> <span class="nav-text">技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%8F%90%E7%A4%BA%E7%AC%A6%E6%98%BE%E7%A4%BA%E5%88%86%E6%94%AF"><span class="nav-number">21.1.</span> <span class="nav-text">命令提示符显示分支</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : '12ce447937865d37ba2b8df23e161509',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Calibre提供了一系列的python接口，通过这些接口，可以实现对Calibre数据库的批量操作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="calibre python 接口">
+<meta property="og:url" content="https://pkemb.com/2021/09/calibre-python-api/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="Calibre提供了一系列的python接口，通过这些接口，可以实现对Calibre数据库的批量操作。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-09-21T20:56:44.000Z">
+<meta property="article:modified_time" content="2021-09-21T21:22:23.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://pkemb.com/2021/09/calibre-python-api/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>calibre python 接口 | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2021/09/calibre-python-api/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          calibre python 接口
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-09-21 20:56:44 / 修改时间：21:22:23" itemprop="dateCreated datePublished" datetime="2021-09-21T20:56:44+00:00">2021-09-21</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><code>Calibre</code>提供了一系列的<code>python</code>接口，通过这些接口，可以实现对<code>Calibre</code>数据库的批量操作。</p>
+<span id="more"></span>
+<h2 id="安装"><a class="header-anchor" href="#安装">¶</a>安装</h2>
+<p>在<a target="_blank" rel="noopener" href="https://calibre-ebook.com/zh_CN/download">Calibre下载页面</a>下载对应系统的安装包安装即可。安装完成之后，<code>Calibre</code>安装目录会有对应的shell和python库。如果是Linux系统，可以直接通过包管理器安装Calibre。</p>
+<p>以Ubuntu为例，安装完毕之后，<code>Calibre</code>相关的文件在<code>/usr/lib/calibre</code>目录下。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">root@localhost$ </span><span class="language-bash"><span class="built_in">ls</span> -l /usr/lib/calibre/</span></span><br><span class="line">total 36</span><br><span class="line">drwxr-xr-x 14 root root 4096 Jan 27  2020 calibre</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jan 27  2020 css_selectors</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jan 27  2020 duktape</span><br><span class="line">drwxr-xr-x  8 root root 4096 Jan 27  2020 html5lib</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jan 27  2020 lzma</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jan 27  2020 odf</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jan 27  2020 regex</span><br><span class="line">drwxr-xr-x  2 root root 4096 Jan 27  2020 templite</span><br><span class="line">drwxr-xr-x  3 root root 4096 Jan 27  2020 tinycss</span><br></pre></td></tr></table></figure>
+<p>以下的说明都以Ubuntu为例。</p>
+<h2 id="Calibre-shell命令"><a class="header-anchor" href="#Calibre-shell命令">¶</a>Calibre shell命令</h2>
+<p><code>Calibre</code>提供了一系列的shell命令，而这些命令其实是python脚本。通过阅读官方编写的python脚本，可以学习calibre的python接口。<a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/cli-index.html">cli-index.html</a>列出了<code>Calibre</code>提供的所有shell指令。我希望通过脚本批量修改书籍的metadata，所以需要关注calibredb命令的实现。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibre.html">calibre</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibre-customize.html">calibre-customize</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibre-debug.html">calibre-debug</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibre-server.html">calibre-server</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibre-smtp.html">calibre-smtp</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibredb.html">calibredb</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/ebook-convert.html">ebook-convert</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/ebook-edit.html">ebook-edit</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/ebook-meta.html">ebook-meta</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/ebook-polish.html">ebook-polish</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/ebook-viewer.html">ebook-viewer</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/fetch-ebook-metadata.html">fetch-ebook-metadata</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/lrf2lrs.html">lrf2lrs</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/lrfviewer.html">lrfviewer</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/lrs2lrf.html">lrs2lrf</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/web2disk.html">web2disk</a></li>
+</ul>
+<h2 id="Calibre-python-接口"><a class="header-anchor" href="#Calibre-python-接口">¶</a>Calibre python 接口</h2>
+<p>calibre提供了python接口的文档，但是感觉不全。与安装目录提供的文件比较，很多东西文档没有介绍。所以不参考Calibre提供的python文档，直接阅读库的源代码。</p>
+<p><a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/py-modindex.html">https://manual.calibre-ebook.com/py-modindex.html</a></p>
+<h2 id="calibredb"><a class="header-anchor" href="#calibredb">¶</a>calibredb</h2>
+<p>通过阅读calibredb的<a target="_blank" rel="noopener" href="https://manual.calibre-ebook.com/generated/en/calibredb.html">帮助网页</a>，发现calibredb实现了对数据库的各种操作。这里我只关心获取metadata以及设置metadata。</p>
+<ul>
+<li>list</li>
+<li>add</li>
+<li>remove</li>
+<li>add_format</li>
+<li>remove_format</li>
+<li>show_metadata</li>
+<li>set_metadata</li>
+<li>export</li>
+<li>catalog</li>
+<li>saved_searches</li>
+<li>add_custom_column</li>
+<li>custom_columns</li>
+<li>remove_custom_column</li>
+<li>set_custom</li>
+<li>restore_database</li>
+<li>check_library</li>
+<li>list_categories</li>
+<li>backup_metadata</li>
+<li>clone</li>
+<li>embed_metadata</li>
+<li>search</li>
+</ul>
+<h3 id="calibredb命令的实现"><a class="header-anchor" href="#calibredb命令的实现">¶</a>calibredb命令的实现</h3>
+<p>通过which命令确定calibredb命令的位置，cat即可。通过阅读发现，calibredb是对cli命令的进一步封装。从脚本也可以看出，calibre所有的python文件都位于/usr/lib/calibre下面（第10行）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python2.7</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">This is the standard runscript for all of calibre&#x27;s tools.</span></span><br><span class="line"><span class="string">Do not modify it unless you know what you are doing.</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys, os</span><br><span class="line"></span><br><span class="line">path = os.environ.get(<span class="string">&#x27;CALIBRE_PYTHON_PATH&#x27;</span>, <span class="string">&#x27;/usr/lib/calibre&#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> path <span class="keyword">not</span> <span class="keyword">in</span> sys.path:</span><br><span class="line">    sys.path.insert(<span class="number">0</span>, path)</span><br><span class="line"></span><br><span class="line">sys.resources_location = os.environ.get(<span class="string">&#x27;CALIBRE_RESOURCES_PATH&#x27;</span>, <span class="string">&#x27;/usr/share/calibre&#x27;</span>)</span><br><span class="line">sys.extensions_location = os.environ.get(<span class="string">&#x27;CALIBRE_EXTENSIONS_PATH&#x27;</span>, <span class="string">&#x27;/usr/lib/calibre/calibre/plugins&#x27;</span>)</span><br><span class="line">sys.executables_location = os.environ.get(<span class="string">&#x27;CALIBRE_EXECUTABLES_PATH&#x27;</span>, <span class="string">&#x27;/usr/bin&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> calibre.library.cli <span class="keyword">import</span> main</span><br><span class="line">sys.exit(main())</span><br></pre></td></tr></table></figure>
+<p>下面是cli.py中main()函数的实现。不难看出，根据子命令构造出对应的函数名（<code>command</code>变量），然后调用。例如子命令<code>list</code>会调用函数<code>command_list</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>(<span class="params">args=sys.argv</span>):</span><br><span class="line">    parser = option_parser()</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(args) &lt; <span class="number">2</span>:</span><br><span class="line">        parser.print_help()</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">if</span> args[<span class="number">1</span>] <span class="keyword">not</span> <span class="keyword">in</span> COMMANDS:</span><br><span class="line">        <span class="keyword">if</span> args[<span class="number">1</span>] == <span class="string">&#x27;--version&#x27;</span>:</span><br><span class="line">            parser.print_version()</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">        parser.print_help()</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    command = <span class="built_in">eval</span>(<span class="string">&#x27;command_&#x27;</span>+args[<span class="number">1</span>])</span><br><span class="line">    dbpath = prefs[<span class="string">&#x27;library_path&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> command(args[<span class="number">2</span>:], dbpath)</span><br></pre></td></tr></table></figure>
+<h2 id="编写脚本"><a class="header-anchor" href="#编写脚本">¶</a>编写脚本</h2>
+<h3 id="引入calibre"><a class="header-anchor" href="#引入calibre">¶</a>引入calibre</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python2.7</span></span><br><span class="line"><span class="keyword">import</span> sys, os</span><br><span class="line"></span><br><span class="line">path = os.environ.get(<span class="string">&#x27;CALIBRE_PYTHON_PATH&#x27;</span>, <span class="string">&#x27;/usr/lib/calibre&#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> path <span class="keyword">not</span> <span class="keyword">in</span> sys.path:</span><br><span class="line">    sys.path.insert(<span class="number">0</span>, path)</span><br><span class="line"></span><br><span class="line">sys.resources_location = os.environ.get(<span class="string">&#x27;CALIBRE_RESOURCES_PATH&#x27;</span>, <span class="string">&#x27;/usr/share/calibre&#x27;</span>)</span><br><span class="line">sys.extensions_location = os.environ.get(<span class="string">&#x27;CALIBRE_EXTENSIONS_PATH&#x27;</span>, <span class="string">&#x27;/usr/lib/calibre/calibre/plugins&#x27;</span>)</span><br><span class="line">sys.executables_location = os.environ.get(<span class="string">&#x27;CALIBRE_EXECUTABLES_PATH&#x27;</span>, <span class="string">&#x27;/usr/bin&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> calibre.db.legacy <span class="keyword">import</span> LibraryDatabase</span><br></pre></td></tr></table></figure>
+<h3 id="打开数据库"><a class="header-anchor" href="#打开数据库">¶</a>打开数据库</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db = LibraryDatabase(<span class="string">&quot;/path/to/calibre-library&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="db常用API"><a class="header-anchor" href="#db常用API">¶</a>db常用API</h3>
+<p>更多API请打开文件<code>/usr/lib/calibre/calibre/db/legacy.py</code>查看。</p>
+<table>
+    <colgroup><col style="width: 339.0px;"><col style="width: 762.0px;"></colgroup>
+    <tbody>
+        <tr>
+            <th>API</th>
+            <th>说明</th>
+        </tr><tr>
+            <td>db.get_data_as_dict()</td>
+            <td>返回数据库所有书籍的信息，格式是字典。<br>数据库较大时，此函数非常慢。</td>
+        </tr><tr>
+            <td>db.all_ids()</td>
+            <td>返回所有书籍的id。相对来说比较快。</td>
+        </tr><tr>
+            <td>db.get_metadata(id, index_is_id=True)</td>
+            <td>返回指定id的metadata，数据类型是calibre.ebooks.metadata.book.base.Metadata。支持set/get函数。</td>
+        </tr><tr>
+            <td colspan="1">db.set_metadata(id, metadata, force_changes=True)</td>
+            <td colspan="1">更新metadata，第二个参数是get_metadate()的返回值。</td>
+        </tr>
+    </tbody>
+</table>
+<p>get_data_as_dict() 返回的字典包含如下索引：</p>
+<p>rating、author_sort、isbn、pubdate、series、fmt_mobi、id、size、uuid、title、comments、languages、sort、tags、timestamp、last_modified、authors、publisher、series_index、identifiers、cover、formats。</p>
+<h2 id="metadata常用API"><a class="header-anchor" href="#metadata常用API">¶</a>metadata常用API</h2>
+<p>每本书的metadata本质上是一个字典，字典包含的索引如下。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">NULL_VALUES = &#123;</span><br><span class="line">                <span class="string">&#x27;user_metadata&#x27;</span>: &#123;&#125;,</span><br><span class="line">                <span class="string">&#x27;cover_data&#x27;</span>   : (<span class="literal">None</span>, <span class="literal">None</span>),</span><br><span class="line">                <span class="string">&#x27;tags&#x27;</span>         : [],</span><br><span class="line">                <span class="string">&#x27;identifiers&#x27;</span>  : &#123;&#125;,</span><br><span class="line">                <span class="string">&#x27;languages&#x27;</span>    : [],</span><br><span class="line">                <span class="string">&#x27;device_collections&#x27;</span>: [],</span><br><span class="line">                <span class="string">&#x27;author_sort_map&#x27;</span>: &#123;&#125;,</span><br><span class="line">                <span class="string">&#x27;authors&#x27;</span>      : [_(<span class="string">&#x27;Unknown&#x27;</span>)],</span><br><span class="line">                <span class="string">&#x27;author_sort&#x27;</span>  : _(<span class="string">&#x27;Unknown&#x27;</span>),</span><br><span class="line">                <span class="string">&#x27;title&#x27;</span>        : _(<span class="string">&#x27;Unknown&#x27;</span>),</span><br><span class="line">                <span class="string">&#x27;user_categories&#x27;</span> : &#123;&#125;,</span><br><span class="line">                <span class="string">&#x27;author_link_map&#x27;</span> : &#123;&#125;,</span><br><span class="line">                <span class="string">&#x27;language&#x27;</span>     : <span class="string">&#x27;und&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>calibre.ebooks.metadata.book.base.Metadata</code>常用的API如下，更多信息请阅读文件<code>/usr/lib/calibre/calibre/ebooks/metadata/book/base.py</code>查看。</p>
+<table>
+    <tbody>
+        <tr><th>API</th><th>说明</th></tr>
+        <tr>
+            <td>get('index')</td>
+            <td>获取指定索引的值。</td>
+        </tr>
+        <tr>
+            <td>set('index', value)</td>
+            <td>设置指定索引的值。主要要类型匹配。例如authors的值是一个list，author_sort的值是一个字符串。</td>
+        </tr>
+    </tbody>
+</table>
+<h2 id="示例脚本"><a class="header-anchor" href="#示例脚本">¶</a>示例脚本</h2>
+<p>脚本的作用是简单格式化书籍的作者信息。使用脚本之前，需要更改<code>Calibre</code>数据库的路径。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python2.7</span></span><br><span class="line"><span class="comment"># encoding:utf-8</span></span><br><span class="line"><span class="comment"># -*- coding=UTF-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys, os, re, time</span><br><span class="line"></span><br><span class="line">path = os.environ.get(<span class="string">&#x27;CALIBRE_PYTHON_PATH&#x27;</span>, <span class="string">&#x27;/usr/lib/calibre&#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> path <span class="keyword">not</span> <span class="keyword">in</span> sys.path:</span><br><span class="line">    sys.path.insert(<span class="number">0</span>, path)</span><br><span class="line"></span><br><span class="line">sys.resources_location = os.environ.get(<span class="string">&#x27;CALIBRE_RESOURCES_PATH&#x27;</span>, <span class="string">&#x27;/usr/share/calibre&#x27;</span>)</span><br><span class="line">sys.extensions_location = os.environ.get(<span class="string">&#x27;CALIBRE_EXTENSIONS_PATH&#x27;</span>, <span class="string">&#x27;/usr/lib/calibre/calibre/plugins&#x27;</span>)</span><br><span class="line">sys.executables_location = os.environ.get(<span class="string">&#x27;CALIBRE_EXECUTABLES_PATH&#x27;</span>, <span class="string">&#x27;/usr/bin&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> calibre.db.legacy <span class="keyword">import</span> LibraryDatabase</span><br><span class="line"></span><br><span class="line">db = LibraryDatabase(<span class="string">&quot;/path/to/calibre_path&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">format_authors</span>(<span class="params"><span class="built_in">id</span></span>):</span><br><span class="line">    metadata = db.get_metadata(<span class="built_in">id</span>, index_is_id=<span class="literal">True</span>)</span><br><span class="line">    old_authors = metadata.get(<span class="string">&#x27;authors&#x27;</span>)</span><br><span class="line">    new_authors = []</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;id = &quot;</span> + <span class="built_in">str</span>(<span class="built_in">id</span>) + <span class="string">&quot;, title = &quot;</span> + metadata.get(<span class="string">&#x27;title&#x27;</span>) + <span class="string">&quot;, old authors:&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> author <span class="keyword">in</span> old_authors:</span><br><span class="line">        <span class="built_in">print</span>(author)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 删除括号中的内容</span></span><br><span class="line">    <span class="keyword">for</span> author <span class="keyword">in</span> old_authors:</span><br><span class="line">        author = re.sub(<span class="string">u&quot;\\(.*?\\)|\\[.*?]|\\（.*?）|\\【.*?】&quot;</span>, <span class="string">&quot;&quot;</span>, author)</span><br><span class="line">        author = author.replace(<span class="string">u&#x27;•&#x27;</span>, <span class="string">u&#x27;·&#x27;</span>)</span><br><span class="line">        new_authors.append(author)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 使用逗号分隔不同作者</span></span><br><span class="line">    old_authors = new_authors</span><br><span class="line">    new_authors = []</span><br><span class="line">    <span class="keyword">for</span> author <span class="keyword">in</span> old_authors:</span><br><span class="line">        split_authors = re.split(<span class="string">u&#x27;,|、|，&#x27;</span>, author)</span><br><span class="line">        <span class="keyword">while</span> <span class="string">&#x27;&#x27;</span> <span class="keyword">in</span> split_authors:</span><br><span class="line">            split_authors.remove(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">        new_authors += split_authors</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 如果所有信息都被删除了，则不更改</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(new_authors) == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 如果作者信息没有发现变化，则不更改</span></span><br><span class="line">    old_authors = metadata.get(<span class="string">&#x27;authors&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> (old_authors == new_authors):</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;new authors:&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> author <span class="keyword">in</span> new_authors:</span><br><span class="line">        <span class="built_in">print</span>(author)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;&quot;</span>)</span><br><span class="line"></span><br><span class="line">    metadata.<span class="built_in">set</span>(<span class="string">&#x27;authors&#x27;</span>,     new_authors)</span><br><span class="line">    metadata.<span class="built_in">set</span>(<span class="string">&#x27;author_sort&#x27;</span>, new_authors[<span class="number">0</span>])</span><br><span class="line">    db.set_metadata(<span class="built_in">id</span>, metadata, force_changes=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_format_authors</span>(<span class="params"><span class="built_in">id</span></span>):</span><br><span class="line">    authors = <span class="string">&#x27;pk&#x27;</span></span><br><span class="line">    metadata = db.get_metadata(<span class="built_in">id</span>, index_is_id=<span class="literal">True</span>)</span><br><span class="line">    authors_list = [authors, <span class="string">&quot;pk2&quot;</span>]</span><br><span class="line">    metadata.<span class="built_in">set</span>(<span class="string">&#x27;authors&#x27;</span>,     authors_list)</span><br><span class="line">    metadata.<span class="built_in">set</span>(<span class="string">&#x27;author_sort&#x27;</span>, authors_list[<span class="number">0</span>])</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;set &quot;</span> + <span class="built_in">str</span>(<span class="built_in">id</span>) + <span class="string">&quot; authors to &quot;</span> + <span class="built_in">str</span>(authors_list))</span><br><span class="line">    db.set_metadata(<span class="built_in">id</span>, metadata, force_changes=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>():</span><br><span class="line">    all_ids = db.all_ids()</span><br><span class="line">    <span class="keyword">for</span> <span class="built_in">id</span> <span class="keyword">in</span> all_ids:</span><br><span class="line">        format_authors(<span class="built_in">id</span>)</span><br><span class="line">        time.sleep(<span class="number">0.2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/09/git-command/" rel="prev" title="git常用命令">
+      <i class="fa fa-chevron-left"></i> git常用命令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/09/linux-capabilities/" rel="next" title="linux capabilities">
+      linux capabilities <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Calibre-shell%E5%91%BD%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">Calibre shell命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Calibre-python-%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.</span> <span class="nav-text">Calibre python 接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#calibredb"><span class="nav-number">4.</span> <span class="nav-text">calibredb</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#calibredb%E5%91%BD%E4%BB%A4%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.1.</span> <span class="nav-text">calibredb命令的实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E5%86%99%E8%84%9A%E6%9C%AC"><span class="nav-number">5.</span> <span class="nav-text">编写脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E5%85%A5calibre"><span class="nav-number">5.1.</span> <span class="nav-text">引入calibre</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%93%E5%BC%80%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">5.2.</span> <span class="nav-text">打开数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#db%E5%B8%B8%E7%94%A8API"><span class="nav-number">5.3.</span> <span class="nav-text">db常用API</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#metadata%E5%B8%B8%E7%94%A8API"><span class="nav-number">6.</span> <span class="nav-text">metadata常用API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E8%84%9A%E6%9C%AC"><span class="nav-number">7.</span> <span class="nav-text">示例脚本</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : 'f0b713603be5b505020b3fba1fbe8f18',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

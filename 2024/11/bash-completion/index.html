@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="编写bash补全函数的关键就是根据上下文生成合适的COMPREPLY数组。这里记录了bash补全的相关资料，以及常用的代码片段。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bash补全函数">
+<meta property="og:url" content="https://pkemb.com/2024/11/bash-completion/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="编写bash补全函数的关键就是根据上下文生成合适的COMPREPLY数组。这里记录了bash补全的相关资料，以及常用的代码片段。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-11-30T22:25:25.000Z">
+<meta property="article:modified_time" content="2024-12-01T21:06:34.000Z">
+<meta property="article:author" content="pkemb">
+<meta property="article:tag" content="shell">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://pkemb.com/2024/11/bash-completion/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>bash补全函数 | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2024/11/bash-completion/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          bash补全函数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-11-30 22:25:25" itemprop="dateCreated datePublished" datetime="2024-11-30T22:25:25+00:00">2024-11-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-12-01 21:06:34" itemprop="dateModified" datetime="2024-12-01T21:06:34+00:00">2024-12-01</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>编写bash补全函数的关键就是根据上下文生成合适的<code>COMPREPLY</code>数组。这里记录了bash补全的相关资料，以及常用的代码片段。</p>
+<span id="more"></span>
+<p>关于补全，建议先通读一遍<a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>，可以了解当按下<code>&lt;tab&gt;</code>按键时，bash是如何处理的。这里专注于补全函数，相关描述如下。</p>
+<blockquote>
+<p>After these matches have been generated, any shell function or command specified with the -F and -C options is invoked. When the command or function is invoked, the COMP_LINE, COMP_POINT, COMP_KEY, and COMP_TYPE variables are assigned values as described above (see Bash Variables). If a shell function is being invoked, the COMP_WORDS and COMP_CWORD variables are also set. When the function or command is invoked, the first argument ($1) is the name of the command whose arguments are being completed, the second argument ($2) is the word being completed, and the third argument ($3) is the word preceding the word being completed on the current command line. No filtering of the generated completions against the word being completed is performed; the function or command has complete freedom in generating the matches.</p>
+<p>Any function specified with -F is invoked first. The function may use any of the shell facilities, including the compgen and compopt builtins described below (see Programmable Completion Builtins), to generate the matches. It must put the possible completions in the COMPREPLY array variable, one per array element.</p>
+</blockquote>
+<h2 id="注册补全函数"><a class="header-anchor" href="#注册补全函数">¶</a>注册补全函数</h2>
+<p>使用bash内置命令<code>complete</code>可以为指定shell命令注册补全函数。如下代码表示shell命令<code>foo</code>的补全函数是<code>_foo</code>。在shell命令中，依次敲入<code>foo</code>、<code>空格</code>、<code>&lt;tab&gt;</code>时，补全函数<code>_foo</code>将在当前shell运行。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">complete -F _foo foo</span><br></pre></td></tr></table></figure>
+<p>可以使用命令<code>complete -p func</code>来查询指定命令的补全函数。例如<code>cd</code>命令的补全函数是<code>_cd</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pk@pkdev22:~$ complete -p cd</span><br><span class="line">complete -o nospace -F _cd cd</span><br></pre></td></tr></table></figure>
+<h2 id="上下文"><a class="header-anchor" href="#上下文">¶</a>上下文</h2>
+<p>阅读<a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>可以得知，当调用补全函数时，bash会准备好<code>COMP_LINE</code>、<code>COMP_POINT</code>、<code>COMP_KEY</code>、<code>COMP_TYPE</code>、<code>COMP_WORDS</code>和<code>COMP_CWORD</code>变量。bash手册关于这些变量的描述如下。</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>COMP_LINE</td>
+<td>The current command line. This variable is available only in shell functions and external commands invoked by the programmable completion facilities (see <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>).</td>
+</tr>
+<tr>
+<td>COMP_POINT</td>
+<td>The index of the current cursor position relative to the beginning of the current command. If the current cursor position is at the end of the current command, the value of this variable is equal to <code>$&#123;#COMP_LINE&#125;</code>. This variable is available only in shell functions and external commands invoked by the programmable completion facilities (see <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>).</td>
+</tr>
+<tr>
+<td>COMP_KEY</td>
+<td>The key (or final key of a key sequence) used to invoke the current completion function.</td>
+</tr>
+<tr>
+<td>COMP_TYPE</td>
+<td>Set to an integer value corresponding to the type of completion attempted that caused a completion function to be called: TAB, for normal completion, ‘?’, for listing completions after successive tabs, ‘!’, for listing alternatives on partial word completion, ‘@’, to list completions if the word is not unmodified, or ‘%’, for menu completion. This variable is available only in shell functions and external commands invoked by the programmable completion facilities (see <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>).</td>
+</tr>
+<tr>
+<td>COMP_WORDS</td>
+<td>An array variable consisting of the individual words in the current command line. The line is split into words as Readline would split it, using COMP_WORDBREAKS as described above. This variable is available only in shell functions invoked by the programmable completion facilities (see <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>).</td>
+</tr>
+<tr>
+<td>COMP_CWORD</td>
+<td>An index into <code>$&#123;COMP_WORDS&#125;</code> of the word containing the current cursor position. This variable is available only in shell functions invoked by the programmable completion facilities (see <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/bash.html#Programmable-Completion">Programmable Completion</a>).</td>
+</tr>
+</tbody>
+</table>
+<p>直接看描述，有点迷迷糊糊，上例子。<code>COMP_LINE</code>是一个字符串，表示整个命令行，如果末尾有空格，则包含空格。<code>COMP_POINT</code>是<code>COMP_LINE</code>的长度。<code>COMP_KEY</code>不知道是干啥的。<code>COMP_TYPE</code>在第一次敲<code>&lt;tab&gt;</code>时，是9，即<code>&lt;tab&gt;</code>的ASCII值，第二次敲<code>&lt;tab&gt;</code>时，是63，即<code>?</code>的ASCII值。<code>COMP_WORDS</code>和<code>COMP_LINE</code>很类似，但<code>COMP_WORDS</code>是一个数组。<code>COMP_CWORD</code>是数组<code>COMP_WORDS</code>的下标，</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th><code>foo a b&lt;tab&gt;</code></th>
+<th><code>foo a b&lt;space&gt;&lt;tab&gt;</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>COMP_LINE</td>
+<td><code>foo a b</code></td>
+<td><code>foo a b&lt;space&gt;</code></td>
+</tr>
+<tr>
+<td>COMP_POINT</td>
+<td>7</td>
+<td>8</td>
+</tr>
+<tr>
+<td>COMP_KEY</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>COMP_TYPE</td>
+<td>9 或 63</td>
+<td>9 或 63</td>
+</tr>
+<tr>
+<td>COMP_WORDS</td>
+<td><code>foo</code> <code>a</code> <code>b</code></td>
+<td><code>foo</code> <code>a</code> <code>b</code> <code>&lt;space&gt;</code></td>
+</tr>
+<tr>
+<td>COMP_CWORD</td>
+<td>2</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>根据bash提供的这些变量，可以推算出两个关键的信息，<code>prev</code>和<code>cur</code>。<code>prev</code>表示上一个单词，<code>cur</code>表示当前的单词。绝大多数情况下，可以根据这两个信息计算出补全列表。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">_foo() &#123;</span><br><span class="line">    local prev=&quot;$&#123;COMP_WORDS[COMP_CWORD-1]&#125;&quot;</span><br><span class="line">    local cur=&quot;$&#123;COMP_WORDS[COMP_CWORD]&#125;&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>bash提供了辅助函数<code>_init_completion</code>用来初始化变量<code>prev</code>、<code>cur</code>、<code>words</code>、<code>cword</code>。其中<code>words</code>等同于<code>COMP_WORDS</code>，<code>cword</code>等同于<code>COMP_CWORD</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">_foo() &#123;</span><br><span class="line">    _init_completion || return</span><br><span class="line">    # 接下来的代码可以使用 prev / cur / words / cword 变量。</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="返回补全结果"><a class="header-anchor" href="#返回补全结果">¶</a>返回补全结果</h2>
+<p>补全函数需要填充<code>COMPREPLY</code>数组，向bash返回补全列表。根据日常使用补全的经验，有两种情况。第一种情况，当前的选项输入到一半了。第二种情况，上一个选项输入完成了，开始输入下一个选项。</p>
+<p>对于第一种情况，只需要根据当前的输入<code>$&#123;cur&#125;</code>做一个筛选，将匹配的结果填充到<code>COMPREPLY</code>数组即可。例如<code>foo</code>命令有三个选项<code>--foo1</code>、<code>--foo2</code>、<code>--bar</code>。当输入<code>foo --foo&lt;tab&gt;</code>时，期望bash会提示<code>--foo1</code>和<code>--foo2</code>。bash的内置命令<code>compgen</code>可以帮助做筛选。补全函数的参考实现如下。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">_foo() &#123;</span><br><span class="line">    _init_completion || return</span><br><span class="line">    COMPREPLY=( $(compgen -W &#x27;--foo1 --foo2 --bar&#x27; -- $&#123;cur&#125;) )</span><br><span class="line">    return 0</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第二种情况比较复杂，需要根据之前的输入，向<code>COMPREPLY</code>数组填充不同的值。例如<code>foo</code>命令的所有选项只允许出现一次，当输入<code>foo --foo1 &lt;tab&gt;</code>时，期望只会提示<code>--foo2</code>和<code>--bar</code>。参考实现如下。首先遍历选项列表，如果不在<code>$&#123;words[*]</code>，则追加到变量<code>comp_opts</code>。最后根据<code>$&#123;cur&#125;</code>做筛选。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">_foo() &#123;</span><br><span class="line">    _init_completion || return</span><br><span class="line">    COMPREPLY=()</span><br><span class="line"></span><br><span class="line">    local opts=(&quot;--foo1&quot; &quot;--foo2&quot; &quot;--bar&quot;)</span><br><span class="line">    local comp_opts</span><br><span class="line">    for (( i=0; i &lt; $&#123;#opts[@]&#125;; i++)); do</span><br><span class="line">        # 遍历所有选项，如果不在$&#123;words[*]&#125;，则追加到comp_opts。</span><br><span class="line">        if [[ &quot;$&#123;words[*]&#125;&quot; != *&quot; $&#123;opts[i]&#125; &quot;* ]]; then</span><br><span class="line">            comp_opts+=&quot;$&#123;opts[i]&#125; &quot;</span><br><span class="line">        fi</span><br><span class="line">    done</span><br><span class="line">    COMPREPLY=( $(compgen -W &quot;$&#123;comp_opts&#125;&quot; -- $&#123;cur&#125;) )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>bash比较子字符串时，子字符串必须放在后面。</p>
+</blockquote>
+<p>实际情况往往更加的复杂，比如很多shell命令还有子命令，这些子命令有不同的选项。但思路都是类似的，根据上下文生成合适的<code>COMPREPLY</code>数组。</p>
+<h2 id="compgen"><a class="header-anchor" href="#compgen">¶</a>compgen</h2>
+<p>除了用<code>-W</code>指定补全的数据外，<code>compgen</code>还提供了生成常用数据的选项。比如<code>compgen -u</code>或<code>compgen -A user</code>会输出系统的所有用户，编写<code>chmod</code>的补全函数就会用到。</p>
+<table>
+<thead>
+<tr>
+<th>-A <em>action</em></th>
+<th>短选项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-A alias</td>
+<td>-a</td>
+<td>别名</td>
+</tr>
+<tr>
+<td>-A arrayvar</td>
+<td></td>
+<td>数组变量名</td>
+</tr>
+<tr>
+<td>-A binding</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>-A builtin</td>
+<td>-b</td>
+<td>shell内置命令</td>
+</tr>
+<tr>
+<td>-A command</td>
+<td>-c</td>
+<td>命令</td>
+</tr>
+<tr>
+<td>-A directory [dir]</td>
+<td>-d</td>
+<td>当前路径或指定路径的子目录</td>
+</tr>
+<tr>
+<td>-A disabled</td>
+<td></td>
+<td>禁用的shell内置命令</td>
+</tr>
+<tr>
+<td>-A enabled</td>
+<td></td>
+<td>使能的shell内置命令</td>
+</tr>
+<tr>
+<td>-A export</td>
+<td>-e</td>
+<td>导出的shell变量</td>
+</tr>
+<tr>
+<td>-A file [dir/]</td>
+<td>-f</td>
+<td>当前路径或指定路径的文件。如果加了可选参数，一定用<code>/</code>结尾</td>
+</tr>
+<tr>
+<td>-A function</td>
+<td></td>
+<td>shell函数</td>
+</tr>
+<tr>
+<td>-A group</td>
+<td>-g</td>
+<td>组名</td>
+</tr>
+<tr>
+<td>-A helptopic</td>
+<td></td>
+<td>内置命令<code>help</code>接受的主题</td>
+</tr>
+<tr>
+<td>-A hostname</td>
+<td></td>
+<td>主机名</td>
+</tr>
+<tr>
+<td>-A job</td>
+<td>-j</td>
+<td>任务名</td>
+</tr>
+<tr>
+<td>-A keyword</td>
+<td>-k</td>
+<td>shell关键字</td>
+</tr>
+<tr>
+<td>-A running</td>
+<td></td>
+<td>正在运行的任务名</td>
+</tr>
+<tr>
+<td>-A service</td>
+<td>-s</td>
+<td>服务名</td>
+</tr>
+<tr>
+<td>-A setopt</td>
+<td></td>
+<td><code>set</code>内置命令<code>-o</code>选项的有效参数</td>
+</tr>
+<tr>
+<td>-A shopt</td>
+<td></td>
+<td><code>shopt</code>内置命令接受的选项名</td>
+</tr>
+<tr>
+<td>-A signal</td>
+<td></td>
+<td>信号名</td>
+</tr>
+<tr>
+<td>-A stopped</td>
+<td></td>
+<td>停止的任务</td>
+</tr>
+<tr>
+<td>-A user</td>
+<td>-u</td>
+<td>用户名</td>
+</tr>
+<tr>
+<td>-A variable</td>
+<td>-v</td>
+<td>变量名</td>
+</tr>
+</tbody>
+</table>
+<h2 id="调试技巧"><a class="header-anchor" href="#调试技巧">¶</a>调试技巧</h2>
+<p>在调试补全函数的过程中，经常需要打印某些变量的值。如果直接使用<code>echo</code>输出，会和补全提示混在一起，非常不好看。建议重定向到某一个文件。</p>
+<h2 id="示例"><a class="header-anchor" href="#示例">¶</a>示例</h2>
+<h3 id="bash-completion"><a class="header-anchor" href="#bash-completion">¶</a>bash-completion</h3>
+<p>软件包<code>bash-completion</code>实现了非常多命令的补全，我们可以阅读这些脚本，学习是如何实现的。在Ubuntu系统，这些脚本在<code>/usr/share/bash-completion/</code>目录下面。</p>
+<h3 id="cdwork"><a class="header-anchor" href="#cdwork">¶</a>cdwork</h3>
+<p>假如有一个工作目录，期望在任意目录敲<code>cdwork</code>命令，则跳转到工作目录。如果执行<code>cdwork subdir1</code>，则跳转到工作目录下的<code>subdir1</code>子目录。支持<code>任意一级子目录</code>补全，即输入<code>cdwork &lt;tab&gt;</code>时，补全工作目录下的所有子目录。以下实现是参考<code>_cd</code>函数改的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">export WORKDIR=&quot;/path/to/work/dir&quot;</span><br><span class="line">function cdwork() &#123;</span><br><span class="line">    cd &quot;$&#123;WORKDIR&#125;/$1&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">_cdwork()</span><br><span class="line">&#123;</span><br><span class="line">    local cur prev words cword;</span><br><span class="line">    _init_completion || return;</span><br><span class="line">    local IFS=&#x27;</span><br><span class="line">&#x27; i j k;</span><br><span class="line">    compopt -o filenames;</span><br><span class="line">    local -r mark_dirs=$(_rl_enabled mark-directories &amp;&amp; echo y);</span><br><span class="line">    local -r mark_symdirs=$(_rl_enabled mark-symlinked-directories &amp;&amp; echo y);</span><br><span class="line"></span><br><span class="line">    k=&quot;$&#123;#COMPREPLY[@]&#125;&quot;;</span><br><span class="line">    for j in $(compgen -d -- $WORKDIR/$cur);</span><br><span class="line">    do</span><br><span class="line">        if [[ ( -n $mark_symdirs &amp;&amp; -L $j || -n $mark_dirs &amp;&amp; ! -L $j ) &amp;&amp; ! -d $&#123;j#$WORKDIR/&#125; ]]; then</span><br><span class="line">            j+=&quot;/&quot;;</span><br><span class="line">        fi;</span><br><span class="line">        COMPREPLY[k++]=$&#123;j#$WORKDIR/&#125;;</span><br><span class="line">    done;</span><br><span class="line"></span><br><span class="line">    _filedir -d;</span><br><span class="line">    if (($&#123;#COMPREPLY[@]&#125; == 1)); then</span><br><span class="line">        i=$&#123;COMPREPLY[0]&#125;;</span><br><span class="line">        if [[ $i == &quot;$cur&quot; &amp;&amp; $i != &quot;*/&quot; ]]; then</span><br><span class="line">            COMPREPLY[0]=&quot;$&#123;i&#125;/&quot;;</span><br><span class="line">        fi;</span><br><span class="line">    fi;</span><br><span class="line">    return</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">complete -o nospace -F _cdwork cdwork</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/shell/" rel="tag"># shell</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/03/dx4600-virtual-machine/" rel="prev" title="DX4600安装虚拟机">
+      <i class="fa fa-chevron-left"></i> DX4600安装虚拟机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/11/ImmortalWrt/" rel="next" title="ImmortalWrt软路由安装及配置">
+      ImmortalWrt软路由安装及配置 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E5%86%8C%E8%A1%A5%E5%85%A8%E5%87%BD%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">注册补全函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">上下文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E8%A1%A5%E5%85%A8%E7%BB%93%E6%9E%9C"><span class="nav-number">3.</span> <span class="nav-text">返回补全结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compgen"><span class="nav-number">4.</span> <span class="nav-text">compgen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%8A%80%E5%B7%A7"><span class="nav-number">5.</span> <span class="nav-text">调试技巧</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">6.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bash-completion"><span class="nav-number">6.1.</span> <span class="nav-text">bash-completion</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cdwork"><span class="nav-number">6.2.</span> <span class="nav-text">cdwork</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : 'e855b3b3ad9a5abe93d69625608faec6',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

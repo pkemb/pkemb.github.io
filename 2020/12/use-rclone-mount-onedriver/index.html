@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="rclone是一个从云端同步文件的命令行工具，常见的网盘和协议基本上都支持，更加详细的介绍可以查看官网。这还是一个开源项目，github。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用rclone挂载onedriver">
+<meta property="og:url" content="https://pkemb.com/2020/12/use-rclone-mount-onedriver/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="rclone是一个从云端同步文件的命令行工具，常见的网盘和协议基本上都支持，更加详细的介绍可以查看官网。这还是一个开源项目，github。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.pkemb.com/image/20200515231732.png">
+<meta property="og:image" content="https://image.pkemb.com/image/20211002104845.png">
+<meta property="og:image" content="https://image.pkemb.com/image/20211002104912.png">
+<meta property="og:image" content="https://image.pkemb.com/image/20211002105010.png">
+<meta property="article:published_time" content="2020-12-26T11:08:06.000Z">
+<meta property="article:modified_time" content="2022-07-17T18:32:31.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.pkemb.com/image/20200515231732.png">
+
+<link rel="canonical" href="https://pkemb.com/2020/12/use-rclone-mount-onedriver/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用rclone挂载onedriver | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2020/12/use-rclone-mount-onedriver/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用rclone挂载onedriver
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-26 11:08:06" itemprop="dateCreated datePublished" datetime="2020-12-26T11:08:06+00:00">2020-12-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-17 18:32:31" itemprop="dateModified" datetime="2022-07-17T18:32:31+00:00">2022-07-17</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>rclone是一个从云端同步文件的命令行工具，常见的网盘和协议基本上都支持，更加详细的介绍可以查看<a target="_blank" rel="noopener" href="https://rclone.org/">官网</a>。这还是一个开源项目，<a target="_blank" rel="noopener" href="https://github.com/rclone/rclone">github</a>。</p>
+<span id="more"></span>
+<h2 id="环境准备"><a class="header-anchor" href="#环境准备">¶</a>环境准备</h2>
+<ul>
+<li>一台可以正常运行的树莓派</li>
+<li><a target="_blank" rel="noopener" href="http://www.bt.cn/">宝塔面板</a>
+<ul>
+<li>新增网站和配置反向代理。如果可以手动配置，也可以不安装。</li>
+</ul>
+</li>
+<li>OneDriver账号，OneDriver个人账户可能无法正常登录，推荐OneDriver for business。</li>
+</ul>
+<h2 id="安装rclone"><a class="header-anchor" href="#安装rclone">¶</a>安装rclone</h2>
+<p>参考文档：<a target="_blank" rel="noopener" href="https://rclone.org/downloads/">https://rclone.org/downloads/</a></p>
+<p>使用以下命令一键安装。如果因为网速原因导致下载失败，可以参考<a target="_blank" rel="noopener" href="https://rclone.org/install.sh">安装脚本</a>的流程，手动下载并安装。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl https://rclone.org/install.sh | sudo bash</span><br></pre></td></tr></table></figure>
+<p>Ubuntu系统可以直接使用apt安装。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install rclone</span><br></pre></td></tr></table></figure>
+<p>安装完成之后，可以执行以下测试命令，测试是否安装成功。如果提示<code>rclone: command not found</code>，则表示安装失败。否则安装成功。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rclone --help</span><br></pre></td></tr></table></figure>
+<h2 id="rclone配置OneDriver账户"><a class="header-anchor" href="#rclone配置OneDriver账户">¶</a>rclone配置OneDriver账户</h2>
+<p>参考文档：<a target="_blank" rel="noopener" href="https://rclone.org/onedrive/">https://rclone.org/onedrive/</a></p>
+<h3 id="获取客户ID和密码"><a class="header-anchor" href="#获取客户ID和密码">¶</a>获取客户ID和密码</h3>
+<p>以下是官方给出的获取步骤，注意保存好客户端ID和密码，关闭页面后将无法再次查看。第5步给API设置的权限，不能少，否则会影响后续对文件的操作。</p>
+<blockquote>
+<ol>
+<li>Open <a target="_blank" rel="noopener" href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade">https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade</a>, then <code>click New registration</code>.</li>
+<li>Enter a name for your app, choose account type <code>Any Azure AD directory - Multitenant</code>, select <code>Web</code> in <code>Redirect URI</code> Enter <code>http://localhost:53682/</code> and click Register. Copy and keep the <code>Application (client) ID</code> under the app name for later use.</li>
+<li>Under <code>manage</code> select <code>Certificates &amp; secrets</code>, click <code>New client secret</code>. Copy and keep that secret for later use.</li>
+<li>Under <code>manage</code> select <code>API permissions</code>, click <code>Add a permission</code> and select <code>Microsoft Graph</code> then select <code>delegated permissions</code>.</li>
+<li>Search and select the follwing permssions: <code>Files.Read</code>, <code>Files.ReadWrite</code>, <code>Files.Read.All</code>, <code>Files.ReadWrite.All</code>, <code>offline_access</code>, <code>User.Read</code>. Once selected click <code>Add permissions</code> at the bottom.</li>
+</ol>
+</blockquote>
+<h3 id="配置反向代理"><a class="header-anchor" href="#配置反向代理">¶</a>配置反向代理</h3>
+<p>在配置rclone的过程中，需要弹出浏览器进行认证。由于树莓派没有图形界面，所以需要曲线救国，有三种思路：</p>
+<ol>
+<li>先在Windows下安装rclone，并配置好OneDrive，获取token。最后在树莓派上使用token设置OneDrive，具体步骤可以参考这篇<a target="_blank" rel="noopener" href="https://www.xiaoz.me/archives/10397">博客</a>。</li>
+<li>利用反向代理，实现间接访问。需要使用宝塔配置反向代理。</li>
+<li>树莓派安装浏览器后通过xserver访问。对机器的性能有一定的要求。</li>
+</ol>
+<p>配置反向代理的步骤：</p>
+<ol>
+<li>进入宝塔面板的<code>安全</code>界面，打开<code>53682</code>端口。</li>
+<li>进入宝塔面板的<code>网站</code>界面，添加一个站点。假设域名是<code>rclone.pi3b.inc</code>。</li>
+<li>点击新增网站的<code>设置</code>按钮，进入<code>反向代理</code>，将网站代理到<code>http://127.0.0.1:53682</code>。<br>
+<img src="https://image.pkemb.com/image/20200515231732.png" alt=""></li>
+<li>添加域名的DNS解析。</li>
+</ol>
+<h3 id="rclone链接OneDrive账户"><a class="header-anchor" href="#rclone链接OneDrive账户">¶</a>rclone链接OneDrive账户</h3>
+<p>在终端输入<code>rclone config</code>，进入配置界面。这里选择<code>n</code>，创建一个新的remote。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">rclone config</span></span><br><span class="line">2021/10/02 02:33:08 NOTICE: Config file &quot;/home/pk/.config/rclone/rclone.conf&quot; not found - using defaults</span><br><span class="line">No remotes found - make a new one</span><br><span class="line">n) New remote</span><br><span class="line">s) Set configuration password</span><br><span class="line">q) Quit config</span><br><span class="line"><span class="meta prompt_">n/s/q&gt; </span><span class="language-bash">n</span></span><br></pre></td></tr></table></figure>
+<p>输入<code>n</code>之后点击回车，这时要为remote设置一个名字。后续的操作都是通过此name要完成。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">n/s/q&gt; </span><span class="language-bash">n</span></span><br><span class="line"><span class="meta prompt_">name&gt; </span><span class="language-bash">remote_name</span></span><br></pre></td></tr></table></figure>
+<p>设置好name之后，点击回车，接下来选项存储类型。<code>rclone</code>支持非常多的存储类型，这里选项<code>Microsoft OneDrive</code>。不同版本的<code>rclone</code>，前面的数字可能不一样，注意不要选错了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Type of storage to configure.</span><br><span class="line">Enter a string value. Press Enter for the default (&quot;&quot;).</span><br><span class="line">Choose a number from below, or type in your own value</span><br><span class="line">......</span><br><span class="line">26 / Microsoft OneDrive</span><br><span class="line">   \ &quot;onedrive&quot;</span><br><span class="line">......</span><br><span class="line"><span class="meta prompt_">Storage&gt; </span><span class="language-bash">26</span></span><br></pre></td></tr></table></figure>
+<p>点击回车后，接着需要输入应用程序ID和密码。如果不知道这两个值，可以往前看看<a href="#%E8%8E%B7%E5%8F%96%E5%AE%A2%E6%88%B7ID%E5%92%8C%E5%AF%86%E7%A0%81">获取客户ID和密码</a>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">Storage&gt; </span><span class="language-bash">26</span></span><br><span class="line">OAuth Client Id</span><br><span class="line">Leave blank normally.</span><br><span class="line">Enter a string value. Press Enter for the default (&quot;&quot;).</span><br><span class="line"><span class="meta prompt_">client_id&gt; </span><span class="language-bash">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</span></span><br><span class="line">OAuth Client Secret</span><br><span class="line">Leave blank normally.</span><br><span class="line">Enter a string value. Press Enter for the default (&quot;&quot;).</span><br><span class="line"><span class="meta prompt_">client_secret&gt; </span><span class="language-bash">xxxxxxxxx</span></span><br></pre></td></tr></table></figure>
+<p>选择账户的类型，根据自己的实际情况选项。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Choose national cloud region for OneDrive.</span><br><span class="line">Enter a string value. Press Enter for the default (&quot;global&quot;).</span><br><span class="line">Choose a number from below, or type in your own value</span><br><span class="line"> 1 / Microsoft Cloud Global</span><br><span class="line">   \ &quot;global&quot;</span><br><span class="line"> 2 / Microsoft Cloud for US Government</span><br><span class="line">   \ &quot;us&quot;</span><br><span class="line"> 3 / Microsoft Cloud Germany</span><br><span class="line">   \ &quot;de&quot;</span><br><span class="line"> 4 / Azure and Office 365 operated by 21Vianet in China</span><br><span class="line">   \ &quot;cn&quot;</span><br><span class="line"><span class="meta prompt_">region&gt; </span><span class="language-bash">1</span></span><br></pre></td></tr></table></figure>
+<p>是否需要高级配置，这里选项n。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Edit advanced config?</span><br><span class="line">y) Yes</span><br><span class="line">n) No (default)</span><br><span class="line"><span class="meta prompt_">y/n&gt; </span><span class="language-bash">n</span></span><br></pre></td></tr></table></figure>
+<p>选择是否自动配置，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Use auto config?</span><br><span class="line"> * Say Y if not sure</span><br><span class="line"> * Say N if you are working on a remote or headless machine</span><br><span class="line"></span><br><span class="line">y) Yes (default)</span><br><span class="line">n) No</span><br><span class="line"><span class="meta prompt_">y/n&gt; </span><span class="language-bash">y</span></span><br><span class="line">2021/10/02 02:46:56 NOTICE: Make sure your Redirect URL is set to &quot;http://localhost:53682/&quot; in your custom config.</span><br><span class="line">2021/10/02 02:46:56 NOTICE: If your browser doesn&#x27;t open automatically go to the following link: http://127.0.0.1:53682/auth?state=vtjMEdIokDmhiFPM0xa18A</span><br><span class="line">2021/10/02 02:46:56 NOTICE: Log in and authorize rclone for access</span><br><span class="line">2021/10/02 02:46:56 NOTICE: Waiting for code...</span><br></pre></td></tr></table></figure>
+<p>需要访问提示信息中出现的网址。将<code>127.0.0.1:53682</code>替换成反向代理的自定义域名，这里是<code>rclone.pi3b.inc</code>，即访问<code>http://rclone.pi3b.inc/auth?state=vtjMEdIokDmhiFPM0xa18A</code>。会出现下图，点击接受。</p>
+<img src="https://image.pkemb.com/image/20211002104845.png" style="zoom: 50%;" />
+<p>点击接受之后，会跳转到<code>localhost:53682</code>，一样替换成反向代理的域名，这里就授权成功了。</p>
+<p><img src="https://image.pkemb.com/image/20211002104912.png" alt=""></p>
+<img src="https://image.pkemb.com/image/20211002105010.png" style="zoom: 70%;" />
+<p>选择连接的类型，根据自己的实际情况选择即可。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Type of connection</span><br><span class="line">Enter a string value. Press Enter for the default (&quot;onedrive&quot;).</span><br><span class="line">Choose a number from below, or type in an existing value</span><br><span class="line"> 1 / OneDrive Personal or Business</span><br><span class="line">   \ &quot;onedrive&quot;</span><br><span class="line"> 2 / Root Sharepoint site</span><br><span class="line">   \ &quot;sharepoint&quot;</span><br><span class="line"> 3 / Sharepoint site name or URL (e.g. mysite or https://contoso.sharepoint.com/sites/mysite)</span><br><span class="line">   \ &quot;url&quot;</span><br><span class="line"> 4 / Search for a Sharepoint site</span><br><span class="line">   \ &quot;search&quot;</span><br><span class="line"> 5 / Type in driveID (advanced)</span><br><span class="line">   \ &quot;driveid&quot;</span><br><span class="line"> 6 / Type in SiteID (advanced)</span><br><span class="line">   \ &quot;siteid&quot;</span><br><span class="line"> 7 / Sharepoint server-relative path (advanced, e.g. /teams/hr)</span><br><span class="line">   \ &quot;path&quot;</span><br><span class="line"><span class="meta prompt_">config_type&gt; </span><span class="language-bash">3</span></span><br></pre></td></tr></table></figure>
+<p>输入sharepoint网站的url</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Site URL</span><br><span class="line"></span><br><span class="line">Example: &quot;https://contoso.sharepoint.com/sites/mysite&quot; or &quot;mysite&quot;</span><br><span class="line"></span><br><span class="line">Enter a string value. Press Enter for the default (&quot;&quot;).</span><br><span class="line"><span class="meta prompt_">config_site_url&gt;</span></span><br></pre></td></tr></table></figure>
+<p>后续：略。</p>
+<h2 id="rclone操作云端文件"><a class="header-anchor" href="#rclone操作云端文件">¶</a>rclone操作云端文件</h2>
+<p><code>rclone</code>支持非常多操作文件的命令，可以<code>rclone -h</code>或<code>man rclone</code>查看帮助。</p>
+<h3 id="挂载"><a class="header-anchor" href="#挂载">¶</a>挂载</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">安装fuse</span></span><br><span class="line">yum -y install fuse</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">创建挂载目录</span></span><br><span class="line">mkdir -p /home/onedrive</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">挂载</span></span><br><span class="line">rclone mount remote_name:path/to/files /home/onedrive</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">如果需要后台保持运行，使用下面的命令</span></span><br><span class="line">nohup rclone mount remote:path/to/files /home/onedrive &amp;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查挂载是否成功</span></span><br><span class="line">df -h</span><br></pre></td></tr></table></figure>
+<p><code>remote_name</code>是设置OneDrive时配置的名字。</p>
+<h3 id="复制文件"><a class="header-anchor" href="#复制文件">¶</a>复制文件</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rclone copy source:path dest:path [flags]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Use the <code>-P</code>/<code>--progress</code> flag to view real-time transfer statistics.</li>
+<li>Use the <code>--dry-run</code> or the <code>--interactive</code>/<code>-i</code> flag to test without copying anything.</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/create-personal-network-disk-by-oneindex/" rel="next" title="使用oneindex+OneDrive搭建私人网盘">
+      使用oneindex+OneDrive搭建私人网盘 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85rclone"><span class="nav-number">2.</span> <span class="nav-text">安装rclone</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rclone%E9%85%8D%E7%BD%AEOneDriver%E8%B4%A6%E6%88%B7"><span class="nav-number">3.</span> <span class="nav-text">rclone配置OneDriver账户</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E5%AE%A2%E6%88%B7ID%E5%92%8C%E5%AF%86%E7%A0%81"><span class="nav-number">3.1.</span> <span class="nav-text">获取客户ID和密码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-number">3.2.</span> <span class="nav-text">配置反向代理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rclone%E9%93%BE%E6%8E%A5OneDrive%E8%B4%A6%E6%88%B7"><span class="nav-number">3.3.</span> <span class="nav-text">rclone链接OneDrive账户</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rclone%E6%93%8D%E4%BD%9C%E4%BA%91%E7%AB%AF%E6%96%87%E4%BB%B6"><span class="nav-number">4.</span> <span class="nav-text">rclone操作云端文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%82%E8%BD%BD"><span class="nav-number">4.1.</span> <span class="nav-text">挂载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6"><span class="nav-number">4.2.</span> <span class="nav-text">复制文件</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : 'd7292ea724ac7495005b957f004fed41',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

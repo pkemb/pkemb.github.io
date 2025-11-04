@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="bpftrace最新发布的0.17.0加入了对arm平台的支持，所以就想为arm平台编译一版bpftrace。值得注意的是，bpftrace才加入对arm 32位的支持（#2360，#2361），由于之前一直是基于64位系统，所以现在工作的还不是很好，还有一些bug。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用yocto为arm平台编译bpftrace">
+<meta property="og:url" content="https://pkemb.com/2023/02/use-yocto-compile-bpftrace-for-arm/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="bpftrace最新发布的0.17.0加入了对arm平台的支持，所以就想为arm平台编译一版bpftrace。值得注意的是，bpftrace才加入对arm 32位的支持（#2360，#2361），由于之前一直是基于64位系统，所以现在工作的还不是很好，还有一些bug。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-11T15:21:11.000Z">
+<meta property="article:modified_time" content="2023-02-12T17:17:54.000Z">
+<meta property="article:author" content="pkemb">
+<meta property="article:tag" content="tools">
+<meta property="article:tag" content="bpftrace">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://pkemb.com/2023/02/use-yocto-compile-bpftrace-for-arm/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用yocto为arm平台编译bpftrace | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2023/02/use-yocto-compile-bpftrace-for-arm/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用yocto为arm平台编译bpftrace
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-02-11 15:21:11" itemprop="dateCreated datePublished" datetime="2023-02-11T15:21:11+00:00">2023-02-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-02-12 17:17:54" itemprop="dateModified" datetime="2023-02-12T17:17:54+00:00">2023-02-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/bpf/" itemprop="url" rel="index"><span itemprop="name">bpf</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>bpftrace最新发布的<a target="_blank" rel="noopener" href="https://github.com/iovisor/bpftrace/releases/tag/v0.17.0">0.17.0</a>加入了对arm平台的支持，所以就想为arm平台编译一版bpftrace。值得注意的是，bpftrace才加入对arm 32位的支持（<a target="_blank" rel="noopener" href="https://github.com/iovisor/bpftrace/pull/2360">#2360</a>，<a target="_blank" rel="noopener" href="https://github.com/iovisor/bpftrace/pull/2361">#2361</a>），由于之前一直是基于64位系统，所以现在工作的还不是很好，还有一些bug。</p>
+<span id="more"></span>
+<h2 id="yocto环境准备"><a class="header-anchor" href="#yocto环境准备">¶</a>yocto环境准备</h2>
+<p>bpftrace相关的bb在<a target="_blank" rel="noopener" href="https://github.com/kraj/meta-clang">meta-clang</a>。同时我想使用一个真实arm平台的BSP，而不是yocto提供的虚拟机<code>qemuarm</code>，所以我还加入了<a target="_blank" rel="noopener" href="https://git.yoctoproject.org/meta-raspberrypi">meta-raspberrypi</a>。考虑到需要克隆很多仓库，所以借助<code>repo</code>工具。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mkdir bpftrace-arm</span><br><span class="line">cd bpftrace-arm</span><br><span class="line">repo init -u https://gitlab.com/pkemb/yocto-manifest.git -b master</span><br><span class="line">repo sync</span><br><span class="line">repo start master --all</span><br><span class="line">export TEMPLATECONF=$&#123;PWD&#125;/meta/meta-pkemb/conf/templates/bpftrace-arm</span><br><span class="line">source meta/poky/oe-init-build-env</span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://gitlab.com/pkemb/yocto-manifest">pkemb/yocto-manifest</a>默认使用内网的镜像地址。</li>
+<li>环境变量<code>TEMPLATECONF</code>用于指定示例配置文件的位置，详细说明参考<a target="_blank" rel="noopener" href="https://docs.yoctoproject.org/singleindex.html#term-TEMPLATECONF">yocto文档</a>。</li>
+<li><code>repo sync</code>默认会从Google服务器下载最新版的<code>repo</code>工具。由于一些原因，国内无法下载。可以设置环境变量<code>export REPO_URL=https://mirrors.tuna.tsinghua.edu.cn/git/git-repo</code>，从清华源下载。</li>
+<li>现在（2023年2月12日）meta-clang中的bpftrace版本是0.16.0，0.16.0 ~ 0.17.0有一些关于32位的修改，这些补丁在meta-pkemb中有加入。</li>
+</ul>
+<h2 id="修改bb文件"><a class="header-anchor" href="#修改bb文件">¶</a>修改bb文件</h2>
+<p>修改bpftrace及其相关依赖的bb文件，在<code>COMPATIBLE_HOST</code>变量中加入<code>arm</code>。</p>
+<h3 id="meta-meta-clang"><a class="header-anchor" href="#meta-meta-clang">¶</a>meta/meta-clang</h3>
+<p><code>bcc_0.26.0.bb</code>和<code>bpftrace_0.16.0.bb</code>。</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">diff --git a/dynamic-layers/openembedded-layer/recipes-devtools/bcc/bcc_0.26.0.bb b/dynamic-layers/openembedded-layer/recipes-devtools/bcc/bcc_0.26.0.bb</span></span><br><span class="line"><span class="comment">index 36c6192..23009c6 100644</span></span><br><span class="line"><span class="comment">--- a/dynamic-layers/openembedded-layer/recipes-devtools/bcc/bcc_0.26.0.bb</span></span><br><span class="line"><span class="comment">+++ b/dynamic-layers/openembedded-layer/recipes-devtools/bcc/bcc_0.26.0.bb</span></span><br><span class="line"><span class="meta">@@ -68,4 +68,4 @@</span> do_install_ptest() &#123;</span><br><span class="line"> FILES:$&#123;PN&#125; += &quot;$&#123;PYTHON_SITEPACKAGES_DIR&#125;&quot;</span><br><span class="line"> FILES:$&#123;PN&#125;-doc += &quot;$&#123;datadir&#125;/$&#123;PN&#125;/man&quot;</span><br><span class="line"></span><br><span class="line"><span class="deletion">-COMPATIBLE_HOST = &quot;(x86_64.*|aarch64.*|powerpc64.*|riscv64.*)-linux&quot;</span></span><br><span class="line"><span class="addition">+COMPATIBLE_HOST = &quot;(x86_64.*|aarch64.*|arm.*|powerpc64.*|riscv64.*)-linux&quot;</span></span><br><span class="line"><span class="comment">diff --git a/dynamic-layers/openembedded-layer/recipes-devtools/bpftrace/bpftrace_0.16.0.bb b/dynamic-layers/openembedded-layer/recipes-devtools/bpftrace/bpftrace_0.16.0.bb</span></span><br><span class="line"><span class="comment">index ca324bc..19e8c64 100644</span></span><br><span class="line"><span class="comment">--- a/dynamic-layers/openembedded-layer/recipes-devtools/bpftrace/bpftrace_0.16.0.bb</span></span><br><span class="line"><span class="comment">+++ b/dynamic-layers/openembedded-layer/recipes-devtools/bpftrace/bpftrace_0.16.0.bb</span></span><br><span class="line"><span class="meta">@@ -54,5 +54,5 @@</span> EXTRA_OECMAKE = &quot; \</span><br><span class="line">     -DENABLE_MAN=OFF \</span><br><span class="line"> &quot;</span><br><span class="line"></span><br><span class="line"><span class="deletion">-COMPATIBLE_HOST = &quot;(x86_64.*|aarch64.*|powerpc64.*|riscv64.*)-linux&quot;</span></span><br><span class="line"><span class="addition">+COMPATIBLE_HOST = &quot;(x86_64.*|aarch64.*|arm.*|powerpc64.*|riscv64.*)-linux&quot;</span></span><br><span class="line"> COMPATIBLE_HOST:libc-musl = &quot;null&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="meta-meta-openembedded"><a class="header-anchor" href="#meta-meta-openembedded">¶</a>meta/meta-openembedded</h3>
+<p><code>libbpf_0.8.0.bb</code>。</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">diff --git a/meta-oe/recipes-kernel/libbpf/libbpf_0.8.0.bb b/meta-oe/recipes-kernel/libbpf/libbpf_0.8.0.bb</span></span><br><span class="line"><span class="comment">index 3aea7c079..909478be3 100644</span></span><br><span class="line"><span class="comment">--- a/meta-oe/recipes-kernel/libbpf/libbpf_0.8.0.bb</span></span><br><span class="line"><span class="comment">+++ b/meta-oe/recipes-kernel/libbpf/libbpf_0.8.0.bb</span></span><br><span class="line"><span class="meta">@@ -12,7 +12,7 @@</span> SRC_URI = &quot;git://github.com/libbpf/libbpf.git;protocol=https;branch=master&quot;</span><br><span class="line"> SRCREV = &quot;86eb09863c1c0177e99c2c703092042d3cdba910&quot;</span><br><span class="line"></span><br><span class="line"> PACKAGE_ARCH = &quot;$&#123;MACHINE_ARCH&#125;&quot;</span><br><span class="line"><span class="deletion">-COMPATIBLE_HOST = &quot;(x86_64|i.86|aarch64|riscv64|powerpc64).*-linux&quot;</span></span><br><span class="line"><span class="addition">+COMPATIBLE_HOST = &quot;(x86_64|i.86|aarch64|arm|riscv64|powerpc64).*-linux&quot;</span></span><br><span class="line"></span><br><span class="line"> S = &quot;$&#123;WORKDIR&#125;/git/src&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="启动编译"><a class="header-anchor" href="#启动编译">¶</a>启动编译</h2>
+<p>yocto是在编译前通过<code>do_fetch</code>任务下载bb指定的源代码，下载很有可能会失败。所以建议把所有的fetch任务跑完之后，再开始编译。建议晚上睡觉前编译，因为<code>clang</code>需要编译非常非常非常久。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载所有的源代码</span></span><br><span class="line">bitbake bpftrace --runall=fetch</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">开始编译</span></span><br><span class="line">bitbake bpftrace</span><br></pre></td></tr></table></figure>
+<p>编译成功之后，bpftrace可执行文件在 <code>build/tmp/work/cortexa7t2hf-neon-vfpv4-poky-linux-gnueabi/bpftrace/0.16.0+gita277ec42102c463d656df8f64eb2f7e87e322210-r0/package/usr/bin</code>。</p>
+<h2 id="运行bpftrace"><a class="header-anchor" href="#运行bpftrace">¶</a>运行bpftrace</h2>
+<p>yocto编译时所使用的glibc版本，与平台里的glibc版本可能不一致，所以bpftrace是无法直接运行的。为了将bpftrace跑起来，需要一些技巧，这里提供两个参考的方法。</p>
+<h3 id="复制文件到arm平台"><a class="header-anchor" href="#复制文件到arm平台">¶</a>复制文件到arm平台</h3>
+<p>为了缩短路径长度，以下相对路径均基于bpftrace的工作目录<code>build/tmp/work/cortexa7t2hf-neon-vfpv4-poky-linux-gnueabi/bpftrace/0.16.0+gita277ec42102c463d656df8f64eb2f7e87e322210-r0/</code>。</p>
+<ol>
+<li>在编译主机打包<code>recipe-sysroot</code>目录，复制到arm平台并解压。假设是放在arm平台的<code>/root/bpf/recipe-sysroot</code>目录。</li>
+<li>将编译主机的文件<code>package/usr/bin/bpftrace</code>复制到arm平台的<code>/root/bpf/recipe-sysroot/usr/bin</code>目录。</li>
+</ol>
+<h3 id="方法一：chroot"><a class="header-anchor" href="#方法一：chroot">¶</a>方法一：chroot</h3>
+<p>通过<code>chroot</code>命令，为bpftrace打造一个专属的rootfs，包含bpftrace对应的glibc，以及依赖的库和头文件。</p>
+<p>编写wrapper脚本<code>/usr/bin/bpftrace_chroot.sh</code>，内容如下。记得给脚本加可执行权限。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line"></span><br><span class="line">SYSROOT=&quot;/root/bpf/recipe-sysroot&quot;</span><br><span class="line"></span><br><span class="line">mkdir -p $SYSROOT/proc $SYSROOT/sys</span><br><span class="line"></span><br><span class="line">if ! mount | grep -q $SYSROOT/proc; then</span><br><span class="line">    mount --bind /proc $SYSROOT/proc</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if ! mount | grep -q $SYSROOT/sys; then</span><br><span class="line">    mount --bind /sys $SYSROOT/sys</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if ! mount | grep -q $SYSROOT/sys/kernel/debug; then</span><br><span class="line">    mount --bind /sys/kernel/debug $SYSROOT/sys/kernel/debug</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">chroot /root/bpf/recipe-sysroot /usr/bin/bpftrace &quot;$@&quot;</span><br></pre></td></tr></table></figure>
+<p>测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">root@raspberrypi:~# bpftrace_chroot.sh -l &#x27;*sleep*&#x27;</span><br><span class="line">hardware:*sleep*:</span><br><span class="line">kprobe:__rpc_sleep_on_priority</span><br><span class="line">kprobe:alarm_timer_nsleep</span><br><span class="line">kprobe:alarm_timer_nsleep_restart</span><br><span class="line">kprobe:alarmtimer_do_nsleep</span><br><span class="line">kprobe:alarmtimer_nsleep_wakeup</span><br><span class="line">kprobe:brcmf_sdio_bus_sleep</span><br><span class="line">kprobe:brcmf_sdio_sleep</span><br><span class="line">kprobe:common_nsleep</span><br><span class="line">kprobe:do_cpu_nanosleep</span><br><span class="line">kprobe:do_nanosleep</span><br><span class="line">kprobe:dwc_otg_get_lpm_portsleepstatus</span><br><span class="line">kprobe:fscache_object_sleep_till_congested</span><br><span class="line">kprobe:gpiod_cansleep</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<h3 id="方法二：patchelf"><a class="header-anchor" href="#方法二：patchelf">¶</a>方法二：patchelf</h3>
+<p>首先使用patchelf修改bpftrace的解释器，然后修改<code>LD_LIBRARY_PATH</code>。具体步骤如下。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd /root/bpftrace/recipe-sysroot/usr/bin</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">备份一下</span></span><br><span class="line">cp bpftrace bpftrace_patchelf</span><br><span class="line">patchelf --set-interpreter /root/bpf/recipe-sysroot/lib/ld-linux-armhf.so.3 ./bpftrace_patchelf</span><br></pre></td></tr></table></figure>
+<p>编写wrapper脚本/usr/bin/bpftrace_patchelf.sh，内容如下。记得给脚本加可执行权限。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">export LD_LIBRARY_PATH=/root/bpf/recipe-sysroot/lib:/root/bpf/recipe-sysroot/usr/lib</span><br><span class="line"></span><br><span class="line">/root/bpftrace/recipe-sysroot/usr/bin/bpftrace_patchelf &quot;$@&quot;</span><br></pre></td></tr></table></figure>
+<p>测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@raspberrypi:~# bpftrace_patchelf.sh -l &#x27;*sleep*&#x27;</span><br><span class="line">hardware:*sleep*:</span><br><span class="line">kprobe:__rpc_sleep_on_priority</span><br><span class="line">kprobe:alarm_timer_nsleep</span><br><span class="line">kprobe:alarm_timer_nsleep_restart</span><br><span class="line">kprobe:alarmtimer_do_nsleep</span><br><span class="line">kprobe:alarmtimer_nsleep_wakeup</span><br><span class="line">kprobe:brcmf_sdio_bus_sleep</span><br><span class="line">kprobe:brcmf_sdio_sleep</span><br><span class="line">kprobe:common_nsleep</span><br><span class="line">kprobe:do_cpu_nanosleep</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<h2 id="已知问题"><a class="header-anchor" href="#已知问题">¶</a>已知问题</h2>
+<h3 id="无法获取到正确的数值型数据"><a class="header-anchor" href="#无法获取到正确的数值型数据">¶</a>无法获取到正确的数值型数据</h3>
+<p>如下面的命令，pid是一个非常大的值，系统中并没有这个进程。<code>tid</code>、<code>nsecs</code>等参数也是类似的。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@raspberrypi:~# bpftrace_patchelf.sh -e &#x27;kprobe:do_nanosleep &#123; printf(&quot;PID %s(%d) sleeping...\n&quot;, comm, pid); &#125;&#x27;</span><br><span class="line">sh: relocation error: /root/bpf/recipe-sysroot/lib/libc.so.6: symbol __nptl_set_robust_list_avail version GLIBC_PRIVATE not defined in file ld-linux-armhf.so.3 with link time reference</span><br><span class="line">Attaching 1 probe...</span><br><span class="line">PID sleep(2128712024) sleeping...</span><br><span class="line">PID sleep(2128712024) sleeping...</span><br><span class="line">PID sleep(2128712024) sleeping...</span><br><span class="line">PID cron(2128712024) sleeping...</span><br><span class="line">PID sleep(2128712024) sleeping...</span><br><span class="line">PID sleep(2128712024) sleeping...</span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a class="header-anchor" href="#参考">¶</a>参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/iovisor/bpftrace/issues/1688">arm 32 support(issue 1688)</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/iovisor/bpftrace/pull/2360">#2360</a></li>
+<li><a target="_blank" rel="noopener" href="https://chasinglulu.github.io/2021/07/07/%E5%9C%A8AArch64%E5%B9%B3%E5%8F%B0%E4%B8%8A%E9%9D%99%E6%80%81%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5eBPF%E7%9B%B8%E5%85%B3%E7%9A%84%E5%B7%A5%E5%85%B7/">在AArch64平台上静态编译链接eBPF相关的工具</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/tools/" rel="tag"># tools</a>
+              <a href="/tags/bpftrace/" rel="tag"># bpftrace</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/vmware-ubuntu-hangs/" rel="prev" title="记一次解决VMWare Ubuntu虚拟机卡死">
+      <i class="fa fa-chevron-left"></i> 记一次解决VMWare Ubuntu虚拟机卡死
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/confluence/" rel="next" title="confluence的安装、使用与维护">
+      confluence的安装、使用与维护 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#yocto%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">yocto环境准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9bb%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">修改bb文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#meta-meta-clang"><span class="nav-number">2.1.</span> <span class="nav-text">meta&#x2F;meta-clang</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#meta-meta-openembedded"><span class="nav-number">2.2.</span> <span class="nav-text">meta&#x2F;meta-openembedded</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E7%BC%96%E8%AF%91"><span class="nav-number">3.</span> <span class="nav-text">启动编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8Cbpftrace"><span class="nav-number">4.</span> <span class="nav-text">运行bpftrace</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6%E5%88%B0arm%E5%B9%B3%E5%8F%B0"><span class="nav-number">4.1.</span> <span class="nav-text">复制文件到arm平台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9Achroot"><span class="nav-number">4.2.</span> <span class="nav-text">方法一：chroot</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9Apatchelf"><span class="nav-number">4.3.</span> <span class="nav-text">方法二：patchelf</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%9F%A5%E9%97%AE%E9%A2%98"><span class="nav-number">5.</span> <span class="nav-text">已知问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E6%B3%95%E8%8E%B7%E5%8F%96%E5%88%B0%E6%AD%A3%E7%A1%AE%E7%9A%84%E6%95%B0%E5%80%BC%E5%9E%8B%E6%95%B0%E6%8D%AE"><span class="nav-number">5.1.</span> <span class="nav-text">无法获取到正确的数值型数据</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : '74d776f0d4da2e9f7bf5b41fd80e8377',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

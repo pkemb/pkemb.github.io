@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Confluence是一个专业的知识管理与协同软件，我用来记录、管理自己的笔记。同时Confluence还是一个非常复杂的系统，复杂就容易出问题。为了在极端情况下（例如数据库奔溃）还能打开自己的笔记，开发了一个脚本，定时导出Confluence空间为PDF文件。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="导出Confluence空间为PDF">
+<meta property="og:url" content="https://pkemb.com/2021/11/export-confluence-space-to-pdf/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="Confluence是一个专业的知识管理与协同软件，我用来记录、管理自己的笔记。同时Confluence还是一个非常复杂的系统，复杂就容易出问题。为了在极端情况下（例如数据库奔溃）还能打开自己的笔记，开发了一个脚本，定时导出Confluence空间为PDF文件。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.pkemb.com/image/20211113123142.png">
+<meta property="article:published_time" content="2021-11-13T12:13:12.000Z">
+<meta property="article:modified_time" content="2022-07-17T18:32:30.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.pkemb.com/image/20211113123142.png">
+
+<link rel="canonical" href="https://pkemb.com/2021/11/export-confluence-space-to-pdf/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>导出Confluence空间为PDF | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2021/11/export-confluence-space-to-pdf/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          导出Confluence空间为PDF
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-13 12:13:12" itemprop="dateCreated datePublished" datetime="2021-11-13T12:13:12+00:00">2021-11-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-17 18:32:30" itemprop="dateModified" datetime="2022-07-17T18:32:30+00:00">2022-07-17</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Confluence是一个专业的知识管理与协同软件，我用来记录、管理自己的笔记。同时Confluence还是一个非常复杂的系统，复杂就容易出问题。为了在极端情况下（例如数据库奔溃）还能打开自己的笔记，开发了一个脚本，定时导出Confluence空间为PDF文件。</p>
+<span id="more"></span>
+<h2 id="资料查找"><a class="header-anchor" href="#资料查找">¶</a>资料查找</h2>
+<p>在开发之前，一定要找找是否有类似的工具，能达到相同的目的。</p>
+<h3 id="confluence"><a class="header-anchor" href="#confluence">¶</a>confluence</h3>
+<p>confluence自身提供了导出为PDF的功能，并且还提供了<a target="_blank" rel="noopener" href="https://github.com/atlassian-api/atlassian-python-api">python api</a>，可惜只能导出单个页面为PDF文件，不支持导出整个空间。</p>
+<p>如果对空间有管理员权限，进入<code>空间管理-&gt;内容工具-&gt;导出</code>，可以选择导出为HTML、XML或PDF。这个满足需求，可惜没有提供API。在寻找资料时，有帖子说老版本提供了API，但是新版本不支持了。</p>
+<img src="https://image.pkemb.com/image/20211113123142.png" style="zoom: 60%;" />
+<h3 id="Confluence-Command-Line-Interface"><a class="header-anchor" href="#Confluence-Command-Line-Interface">¶</a>Confluence Command Line Interface</h3>
+<p>寻找资料时发现了一个非常牛逼的工具，<a target="_blank" rel="noopener" href="https://bobswift.atlassian.net/wiki/spaces/CSOAP/overview">Confluence Command Line Interface</a>，支持非常多的功能，当然也支持导出整个空间为PDF。但是需要配合插件使用，插件需要收费。由于没有找到**插件的方法，所以放弃。</p>
+<h2 id="方法1：导出所有页面然后合并"><a class="header-anchor" href="#方法1：导出所有页面然后合并">¶</a>方法1：导出所有页面然后合并</h2>
+<p>考虑到<code>confluence</code>提供了导出单个页面为PDF的API，所以导出所有的页面，然后合并为一个PDF文件，也不是什么难事。脚本的主要思路如下，源码请移步<a target="_blank" rel="noopener" href="https://github.com/pkemb/tools/blob/master/atlassian/export_all_confluence_page.py">github</a>。</p>
+<ol>
+<li>get_all_spaces() 获取所有空间的key</li>
+<li>get_home_page_of_space() 获取指定空间的homepage id</li>
+<li>get_page_child_by_type() 获取指定页面的一级子页面</li>
+<li>递归获取页面转化为BytesIO对象，追加到PdfFileMerger对象</li>
+<li>PdfFileMerger写入到文件，使用<code>space name</code>作为文件名。</li>
+</ol>
+<p>需要安装<code>atlassian api</code>和<code>PyPDF2</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install atlassian-python-api</span><br><span class="line">pip install PyPDF2</span><br></pre></td></tr></table></figure>
+<p>但是这种方法有以下两个缺点：</p>
+<ol>
+<li>PDF的大纲没有层次，父页面的大纲和子页面的大纲处于同一级。</li>
+<li>在PDF点击目录宏的链接，会跳转到网页，而不是PDF对应的页面。</li>
+</ol>
+<h2 id="方法2：使用空间管理工具导出"><a class="header-anchor" href="#方法2：使用空间管理工具导出">¶</a>方法2：使用空间管理工具导出</h2>
+<p>Confluence的空间管理工具可以很好的导出PDF，但是没有API。但是可以利用无头浏览器，模拟人点击网页，达到导出整个空间为pdf的目的。源码请异步<a target="_blank" rel="noopener" href="https://github.com/pkemb/tools/blob/master/atlassian/export_confluence_by_spider.py">github</a>。</p>
+<p>需要安装<code>atlassian api</code>、<code>selenium</code>和<code>Chrome webdriver</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pip install atlassian-python-api</span><br><span class="line">pip install selenium</span><br><span class="line">apt-get install chromium-chromedriver</span><br></pre></td></tr></table></figure>
+<h2 id="自定义PDF样式"><a class="header-anchor" href="#自定义PDF样式">¶</a>自定义PDF样式</h2>
+<p>confluence支持自定义PDF的样式，包含页眉、页脚、字体、字号等等内容。更加详细的内容可以参考<a target="_blank" rel="noopener" href="https://docs.atlassian.com/confluence/docs-713/Customize+Exports+to+PDF">官方文档</a>。</p>
+<h3 id="设置PDF字体大小"><a class="header-anchor" href="#设置PDF字体大小">¶</a>设置PDF字体大小</h3>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.wiki-content</span> <span class="selector-tag">h1</span></span><br><span class="line">&#123; <span class="attribute">font-size</span>: <span class="number">26pt</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wiki-content</span> <span class="selector-tag">h2</span></span><br><span class="line">&#123; <span class="attribute">font-size</span>: <span class="number">22pt</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wiki-content</span> <span class="selector-tag">h3</span></span><br><span class="line">&#123; <span class="attribute">font-size</span>: <span class="number">16pt</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wiki-content</span> <span class="selector-tag">h4</span></span><br><span class="line">&#123; <span class="attribute">font-size</span>: <span class="number">14pt</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wiki-content</span> <span class="selector-tag">h5</span></span><br><span class="line">&#123; <span class="attribute">font-size</span>: <span class="number">14pt</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.wiki-content</span> <span class="selector-tag">h6</span></span><br><span class="line">&#123; <span class="attribute">font-size</span>: <span class="number">14pt</span>; &#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-tag">body</span>,<span class="selector-tag">p</span>,<span class="selector-tag">li</span>,<span class="selector-tag">td</span>,<span class="selector-tag">table</span>,<span class="selector-tag">tr</span>,<span class="selector-class">.bodytext</span>,<span class="selector-class">.stepfield</span></span><br><span class="line">&#123;     <span class="attribute">font-size</span>: <span class="number">12pt</span>; &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a class="header-anchor" href="#参考">¶</a>参考</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/38770934/how-to-export-to-pdf-a-confluence-page-within-a-script">https://stackoverflow.com/questions/38770934/how-to-export-to-pdf-a-confluence-page-within-a-script</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/xioawu-blog/p/12017973.html">https://www.cnblogs.com/xioawu-blog/p/12017973.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://atlassian-python-api.readthedocs.io/">https://atlassian-python-api.readthedocs.io/</a></li>
+<li><a target="_blank" rel="noopener" href="https://pythonhosted.org/PyPDF2/">https://pythonhosted.org/PyPDF2/</a></li>
+<li><a target="_blank" rel="noopener" href="https://confluence.atlassian.com/conf713/customize-exports-to-pdf-1077913092.html">https://confluence.atlassian.com/conf713/customize-exports-to-pdf-1077913092.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://confluence.atlassian.com/confkb/how-do-i-change-the-font-sizes-in-pdf-export-833938097.html">https://confluence.atlassian.com/confkb/how-do-i-change-the-font-sizes-in-pdf-export-833938097.html</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/10/local-dns-server/" rel="prev" title="搭建局域网DNS服务器">
+      <i class="fa fa-chevron-left"></i> 搭建局域网DNS服务器
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/11/samba/" rel="next" title="samba服务的搭建与管理">
+      samba服务的搭建与管理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B5%84%E6%96%99%E6%9F%A5%E6%89%BE"><span class="nav-number">1.</span> <span class="nav-text">资料查找</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#confluence"><span class="nav-number">1.1.</span> <span class="nav-text">confluence</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Confluence-Command-Line-Interface"><span class="nav-number">1.2.</span> <span class="nav-text">Confluence Command Line Interface</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%951%EF%BC%9A%E5%AF%BC%E5%87%BA%E6%89%80%E6%9C%89%E9%A1%B5%E9%9D%A2%E7%84%B6%E5%90%8E%E5%90%88%E5%B9%B6"><span class="nav-number">2.</span> <span class="nav-text">方法1：导出所有页面然后合并</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%952%EF%BC%9A%E4%BD%BF%E7%94%A8%E7%A9%BA%E9%97%B4%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7%E5%AF%BC%E5%87%BA"><span class="nav-number">3.</span> <span class="nav-text">方法2：使用空间管理工具导出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89PDF%E6%A0%B7%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">自定义PDF样式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEPDF%E5%AD%97%E4%BD%93%E5%A4%A7%E5%B0%8F"><span class="nav-number">4.1.</span> <span class="nav-text">设置PDF字体大小</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : 'c567a52764e09123c50eaf620926d53e',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-180x180-pk.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-pk.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-pk.png">
+  <link rel="mask-icon" href="/images/pk-18x18.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pkemb.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Binder驱动是Binder IPC的基石，学习了解Binder驱动的实现，有助于深入理解Binder。以下基于Orangepi3lts提供的源代码，分析Binder驱动的实现。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Binder驱动源码阅读">
+<meta property="og:url" content="https://pkemb.com/2022/04/binder-driver/index.html">
+<meta property="og:site_name" content="熊孩子程序员">
+<meta property="og:description" content="Binder驱动是Binder IPC的基石，学习了解Binder驱动的实现，有助于深入理解Binder。以下基于Orangepi3lts提供的源代码，分析Binder驱动的实现。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.pkemb.com/image/202204122043628.png">
+<meta property="og:image" content="https://image.pkemb.com/image/202204122102626.png">
+<meta property="og:image" content="https://image.pkemb.com/image/202204162039111.png">
+<meta property="article:published_time" content="2022-04-07T22:49:11.000Z">
+<meta property="article:modified_time" content="2022-07-17T18:32:30.000Z">
+<meta property="article:author" content="pkemb">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.pkemb.com/image/202204122043628.png">
+
+<link rel="canonical" href="https://pkemb.com/2022/04/binder-driver/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Binder驱动源码阅读 | 熊孩子程序员</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <meta name="referrer" content="no-referrer" />
+<link rel="alternate" href="/atom.xml" title="熊孩子程序员" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <a target="_blank" rel="noopener" href="https://github.com/pkemb" class="github-corner" aria-label="View source on GitHub">
+      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+      </svg>
+    </a>
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">熊孩子程序员</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-disk">
+
+    <a href="http://share.pkemb.com/" rel="noopener" target="_blank"><i class="fa fa-file fa-fw"></i>网盘</a>
+
+  </li>
+        <li class="menu-item menu-item-notes">
+
+    <a href="https://notes.pkemb.com/#/" rel="noopener" target="_blank"><i class="fa fa-book fa-fw"></i>读书笔记</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://pkemb.com/2022/04/binder-driver/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="pkemb">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="熊孩子程序员">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Binder驱动源码阅读
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-07 22:49:11" itemprop="dateCreated datePublished" datetime="2022-04-07T22:49:11+00:00">2022-04-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-07-17 18:32:30" itemprop="dateModified" datetime="2022-07-17T18:32:30+00:00">2022-07-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index"><span itemprop="name">android</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>24k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>21 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Binder驱动是Binder IPC的基石，学习了解Binder驱动的实现，有助于深入理解Binder。以下基于<code>Orangepi3lts</code>提供的源代码，分析Binder驱动的实现。</p>
+<span id="more"></span>
+<h2 id="binder设备使用方法"><a class="header-anchor" href="#binder设备使用方法">¶</a>binder设备使用方法</h2>
+<p>了解Binder的使用方法，对理解驱动的设计思路有帮助。Binder是一种进程间通信的方法，采用主从结构，客户端可以借助Binder驱动给服务端发送消息，或者接收服务端的消息。自然可以得到下图。</p>
+<p><img src="https://image.pkemb.com/image/202204122043628.png" alt=""></p>
+<p>但是有一个问题，客户端怎么知道服务端的<code>handle</code>？所以Android引入了一个叫做<code>ServiceManager</code>的进程，这是一个非常特殊的服务端，其<code>handle</code>为0，主要功能是注册和查询Service。所以上图就扩展演变成了下图。由于SM的<code>handle</code>为0，所以服务端可以通过SM注册成为一个Service，客户端可以通过SM查询Service的handle。当得到服务端的handle后，客户端就可以直接与服务端通信了。</p>
+<p><img src="https://image.pkemb.com/image/202204122102626.png" alt=""></p>
+<p>通过上面的分析，Binder有以下的使用场景：</p>
+<ol>
+<li>服务端注册</li>
+<li>客服端查询</li>
+<li>客户端向服务端发起通信</li>
+</ol>
+<p>当然，还需要知道如何打开Binder驱动。下面以<code>ServiceManager</code>为例，展示了一个进程如何初始化Binder驱动。初始化大致分为以下3步。ServiceManager比较特殊，需要调用命令<code>BINDER_SET_CONTEXT_MGR</code>，整个系统也只有<code>ServiceManager</code>需要调用这个命令。</p>
+<ol>
+<li>打开设备驱动节点</li>
+<li>执行mmap映射内存</li>
+<li>调用ioctl读写数据</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 仅保留了主要代码</span></span><br><span class="line"><span class="comment">// frameworks/native/cmds/servicemanager/service_manager.c</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>** argv)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_state</span> *<span class="title">bs</span>;</span></span><br><span class="line">    <span class="type">char</span> *driver = <span class="string">&quot;/dev/binder&quot;</span>;</span><br><span class="line">    ...</span><br><span class="line">    bs = binder_open(driver, <span class="number">128</span>*<span class="number">1024</span>); <span class="comment">// 打开Binder驱动</span></span><br><span class="line">    binder_become_context_manager(bs);  <span class="comment">// 成为Binder大管家</span></span><br><span class="line">    binder_loop(bs, svcmgr_handler);    <span class="comment">// 循环处理消息</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// frameworks/native/cmds/servicemanager/binder.c</span></span><br><span class="line"><span class="keyword">struct</span> binder_state *<span class="title function_">binder_open</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* driver, <span class="type">size_t</span> mapsize)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">binder_state</span> *<span class="title">bs</span>;</span></span><br><span class="line"></span><br><span class="line">    bs = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(*bs));</span><br><span class="line">    bs-&gt;fd = open(driver, O_RDWR | O_CLOEXEC);</span><br><span class="line"></span><br><span class="line">    bs-&gt;mapsize = mapsize;</span><br><span class="line">    bs-&gt;mapped = mmap(<span class="literal">NULL</span>, mapsize, PROT_READ, MAP_PRIVATE, bs-&gt;fd, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> bs;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">binder_become_context_manager</span><span class="params">(<span class="keyword">struct</span> binder_state *bs)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> ioctl(bs-&gt;fd, BINDER_SET_CONTEXT_MGR, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="代码结构"><a class="header-anchor" href="#代码结构">¶</a>代码结构</h2>
+<p>binder驱动代码在kernel源码的<code>drivers/android</code>目录下，头文件在<code>linux-4.9/include/uapi/linux/android</code>目录下，代码可通过<a target="_blank" rel="noopener" href="https://github.com/orangepi-xunlong/linux-orangepi/tree/orange-pi-4.9-sun50iw6">linux-orangepi</a>获取。binder驱动代码主要分为两个文件，<a target="_blank" rel="noopener" href="https://github.com/orangepi-xunlong/linux-orangepi/blob/orange-pi-4.9-sun50iw6/drivers/android/binder.c">binder.c</a>包含misc设备、fops等的实现代码，以及关键数据结构的定义。与内存分配有关的代码和数据结构都定义在<a target="_blank" rel="noopener" href="https://github.com/orangepi-xunlong/linux-orangepi/blob/orange-pi-4.9-sun50iw6/drivers/android/binder_alloc.c">binder_alloc.c</a>中。</p>
+<p>与binder有关的编译选项主要有两个，编译选项<code>CONFIG_ANDROID_BINDER_IPC</code>决定是否将binder编译进系统；<code>CONFIG_ANDROID_BINDER_DEVICES</code>提供了设备名字列表，用逗号分割，binder会根据这个列表提供的设备名，注册若干个设备。下面是<code>orangepi3lts</code>的编译选项设置。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_ANDROID_BINDER_IPC=y</span><br><span class="line">CONFIG_ANDROID_BINDER_DEVICES=&quot;binder,hwbinder,vndbinder&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="设备驱动初始化"><a class="header-anchor" href="#设备驱动初始化">¶</a>设备驱动初始化</h2>
+<p>在<a target="_blank" rel="noopener" href="https://github.com/orangepi-xunlong/linux-orangepi/blob/orange-pi-4.9-sun50iw6/drivers/android/binder.c">binder.c</a>的最底部，<code>device_initcall()</code>注册了binder的初始化函数<code>binder_init()</code>，下面是初始化函数的主体结构，删除了局部变量声明、错误处理相关的代码。首先在debugfs目录下创建文件夹和文件，然后根据编译选项的配置创建若干个设备。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 仅保留主要代码</span></span><br><span class="line"><span class="type">static</span> <span class="type">char</span> *binder_devices_param = CONFIG_ANDROID_BINDER_DEVICES;</span><br><span class="line">module_param_named(devices, binder_devices_param, charp, S_IRUGO);</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> __init <span class="title function_">binder_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="comment">// 在debugfs下创建目录 binder/proc，debugfs的挂载目录可以通过mount命令查看</span></span><br><span class="line">	binder_debugfs_dir_entry_root = debugfs_create_dir(<span class="string">&quot;binder&quot;</span>, <span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span> (binder_debugfs_dir_entry_root)</span><br><span class="line">		binder_debugfs_dir_entry_proc = debugfs_create_dir(<span class="string">&quot;proc&quot;</span>,</span><br><span class="line">						 binder_debugfs_dir_entry_root);</span><br><span class="line">	<span class="comment">// 在debugfs/binder目录下创建若干个文件</span></span><br><span class="line">	<span class="keyword">if</span> (binder_debugfs_dir_entry_root) &#123;</span><br><span class="line">		<span class="comment">//...</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 根据 CONFIG_ANDROID_BINDER_DEVICES 提供的设备名，创建若干个设备</span></span><br><span class="line">	device_names = kzalloc(<span class="built_in">strlen</span>(binder_devices_param) + <span class="number">1</span>, GFP_KERNEL);</span><br><span class="line">	<span class="built_in">strcpy</span>(device_names, binder_devices_param);</span><br><span class="line">	<span class="keyword">while</span> ((device_name = strsep(&amp;device_names, <span class="string">&quot;,&quot;</span>))) &#123;</span><br><span class="line">		ret = init_binder_device(device_name);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line">device_initcall(binder_init);</span><br></pre></td></tr></table></figure>
+<p>设备驱动节点的初始化由函数<code>init_binder_device()</code>完成，参数为设备名。首先为设备申请了一个设备结构体<code>binder_device</code>，然后就是对设备结构体的初始化。</p>
+<p>首先初始化成员<code>miscdev</code>，这表明binder是一个misc字符设备，相关的操作函数存储在<code>binder_fops</code>，这是一个非常重要的结构体。然后调用<code>misc_register()</code>向系统注册binder设备。</p>
+<p><code>context</code>表示binder设备的使用环境，主要记录了<code>contex mgr</code>相关的信息。可以从<a target="_blank" rel="noopener" href="https://source.android.google.cn/devices/architecture/hidl/binder-ipc?hl=zh-cn">Android Binder文档</a>了解到不同binder设备的用途。</p>
+<p>最后，通过<code>hlist</code>将所有的设备结构体链在一起，通过链表头<code>binder_devices</code>可以遍历所有的binder设备。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="title function_">HLIST_HEAD</span><span class="params">(binder_devices)</span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">binder_device</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span> <span class="title">hlist</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">miscdevice</span> <span class="title">miscdev</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_context</span> <span class="title">context</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> __init <span class="title function_">init_binder_device</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_device</span> *<span class="title">binder_device</span>;</span></span><br><span class="line">	binder_device = kzalloc(<span class="keyword">sizeof</span>(*binder_device), GFP_KERNEL);</span><br><span class="line"></span><br><span class="line">	binder_device-&gt;miscdev.fops = &amp;binder_fops;</span><br><span class="line">	binder_device-&gt;miscdev.minor = MISC_DYNAMIC_MINOR;</span><br><span class="line">	binder_device-&gt;miscdev.name = name;</span><br><span class="line"></span><br><span class="line">	binder_device-&gt;context.binder_context_mgr_uid = INVALID_UID;</span><br><span class="line">	binder_device-&gt;context.name = name;</span><br><span class="line">	mutex_init(&amp;binder_device-&gt;context.context_mgr_node_lock);</span><br><span class="line"></span><br><span class="line">	ret = misc_register(&amp;binder_device-&gt;miscdev);</span><br><span class="line">	hlist_add_head(&amp;binder_device-&gt;hlist, &amp;binder_devices);</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在来验证一下binder驱动的初始化。在debugfs的挂载目录下可以看到binder创建的目录和文件。这些文件的作用后面再说。<code>/dev</code>目录下也可以看到binder驱动创建的三个设备节点。从<a target="_blank" rel="noopener" href="https://source.android.google.cn/devices/architecture/hidl/binder-ipc?hl=zh-cn">Android Binder文档</a>可以了解到每个设备节点的用途。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">console:/ # mount | grep debugfs</span><br><span class="line">debugfs on /sys/kernel/debug type debugfs (rw,seclabel,relatime)</span><br><span class="line">console:/ # ls -l /sys/kernel/debug/binder</span><br><span class="line">total 0</span><br><span class="line">-r--r--r-- 1 root root 0 1970-01-01 08:00 failed_transaction_log</span><br><span class="line">drwxr-xr-x 2 root root 0 2022-03-20 17:39 proc</span><br><span class="line">-r--r--r-- 1 root root 0 1970-01-01 08:00 state</span><br><span class="line">-r--r--r-- 1 root root 0 1970-01-01 08:00 stats</span><br><span class="line">-r--r--r-- 1 root root 0 1970-01-01 08:00 transaction_log</span><br><span class="line">-r--r--r-- 1 root root 0 1970-01-01 08:00 transactions</span><br><span class="line"></span><br><span class="line">console:/ # ls /dev/*binder* -l</span><br><span class="line">crw-rw-rw- 1 root root 10,  54 1970-01-01 08:00 /dev/binder</span><br><span class="line">crw-rw-rw- 1 root root 10,  53 1970-01-01 08:00 /dev/hwbinder</span><br><span class="line">crw-rw-rw- 1 root root 10,  52 1970-01-01 08:00 /dev/vndbinder</span><br></pre></td></tr></table></figure>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>IPC 域</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/dev/binder</td>
+<td>框架/应用进程之间的 IPC，使用 AIDL 接口</td>
+</tr>
+<tr>
+<td>/dev/hwbinder</td>
+<td>框架/供应商进程之间的 IPC，使用 HIDL 接口<br>供应商进程之间的 IPC，使用 HIDL 接口</td>
+</tr>
+<tr>
+<td>/dev/vndbinder</td>
+<td>供应商/供应商进程之间的 IPC，使用 AIDL 接口</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<p>另外，在<code>/sys/module/binder/parameters</code>目录下，还可以看到binder驱动定义的参数。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">console:/ # ls -l /sys/module/binder/parameters/</span><br><span class="line">total 0</span><br><span class="line">-rw-r--r-- 1 root root 4096 2022-03-20 19:51 debug_mask</span><br><span class="line">-r--r--r-- 1 root root 4096 2022-03-20 19:51 devices</span><br><span class="line">-rw-r--r-- 1 root root 4096 2022-03-20 19:51 stop_on_user_error</span><br></pre></td></tr></table></figure>
+<h2 id="open函数"><a class="header-anchor" href="#open函数">¶</a>open函数</h2>
+<p>字符设备有一个非常重要的结构体，<code>struct file_operations</code>，以下是binder的定义。在对binder设备节点执行对应的系统调用时，最终会调用到设备驱动提供的函数。使用binder驱动的第一步是调用open()函数，所以需要先分析<code>binder_open()</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">file_operations</span> <span class="title">binder_fops</span> =</span> &#123;</span><br><span class="line">	.owner = THIS_MODULE,</span><br><span class="line">	.poll = binder_poll,</span><br><span class="line">	.unlocked_ioctl = binder_ioctl,</span><br><span class="line">	.compat_ioctl = binder_ioctl,</span><br><span class="line">	.mmap = binder_mmap,</span><br><span class="line">	.open = binder_open,</span><br><span class="line">	.flush = binder_flush,</span><br><span class="line">	.release = binder_release,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>binder_open()</code>主要是围绕结构体<code>binder_proc</code>来做文章，这里记录了一些打开binder的进程的信息，然在<code>debugfs/binder/proc</code>目录下创建一个以<code>pid</code>命名的文件。<code>binder_open()</code>的绝大部分代码都非常好理解，个人觉得以下代码比较关键和难懂。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">binder_open</span><span class="params">(<span class="keyword">struct</span> inode *nodp, <span class="keyword">struct</span> file *filp)</span></span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">// misc 会将 filp-&gt;private_data 设置为 strcut miscdevice</span></span><br><span class="line">	<span class="comment">// 而这个结构体包含在 struct binder_device中，所以可以通过</span></span><br><span class="line">	<span class="comment">// container_of 拿到 binder_dev</span></span><br><span class="line">	binder_dev = container_of(filp-&gt;private_data, <span class="keyword">struct</span> binder_device, miscdev);</span><br><span class="line">	proc-&gt;context = &amp;binder_dev-&gt;context; <span class="comment">// 记录当前进程打开的设备节点</span></span><br><span class="line">	binder_alloc_init(&amp;proc-&gt;alloc);</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">// ioctl() 或其他fops中的函数，可通过private_data拿到proc</span></span><br><span class="line">	filp-&gt;private_data = proc;</span><br><span class="line">	<span class="comment">// 所有的proc链接到链表binder_procs</span></span><br><span class="line">	mutex_lock(&amp;binder_procs_lock);</span><br><span class="line">	hlist_add_head(&amp;proc-&gt;proc_node, &amp;binder_procs);</span><br><span class="line">	mutex_unlock(&amp;binder_procs_lock);</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="mmap函数"><a class="header-anchor" href="#mmap函数">¶</a>mmap函数</h2>
+<p>设备驱动的mmap函数需要协助kernel完成<code>struct vmware_area_struct</code>结构体的设置，mmap函数就非常好理解了。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 删除了错误处理</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">binder_mmap</span><span class="params">(<span class="keyword">struct</span> file *filp, <span class="keyword">struct</span> vm_area_struct *vma)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line">	<span class="comment">// 从 private_data取出proc，这是在open函数设置的</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> =</span> filp-&gt;private_data;</span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *failure_string;</span><br><span class="line">	<span class="comment">// 只有进程的主线程才能调用mmap</span></span><br><span class="line">	<span class="keyword">if</span> (proc-&gt;tsk != current-&gt;group_leader)</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;</span><br><span class="line">	<span class="comment">// 最大映射4MB</span></span><br><span class="line">	<span class="keyword">if</span> ((vma-&gt;vm_end - vma-&gt;vm_start) &gt; SZ_4M)</span><br><span class="line">		vma-&gt;vm_end = vma-&gt;vm_start + SZ_4M;</span><br><span class="line"></span><br><span class="line">	vma-&gt;vm_flags = (vma-&gt;vm_flags | VM_DONTCOPY) &amp; ~VM_MAYWRITE;</span><br><span class="line">	vma-&gt;vm_ops = &amp;binder_vm_ops;</span><br><span class="line">	vma-&gt;vm_private_data = proc;</span><br><span class="line">	<span class="comment">// 为进程映射虚拟地址空间</span></span><br><span class="line">	ret = binder_alloc_mmap_handler(&amp;proc-&gt;alloc, vma);</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>binder_alloc_mmap_handler()</code>申请了一块连续的内核虚拟内存，为每个页面申请了<code>struct binder_lru_page</code>。</p>
+<p>TODO：这些数据结构有什么用？物理内存是什么时候申请的？</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">binder_alloc_mmap_handler</span><span class="params">(<span class="keyword">struct</span> binder_alloc *alloc,</span></span><br><span class="line"><span class="params">			      <span class="keyword">struct</span> vm_area_struct *vma)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">vm_struct</span> *<span class="title">area</span>;</span></span><br><span class="line">	<span class="type">const</span> <span class="type">char</span> *failure_string;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_buffer</span> *<span class="title">buffer</span>;</span></span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;binder_alloc_mmap_lock);</span><br><span class="line">	<span class="comment">// 保留一个连续的内核虚拟区域</span></span><br><span class="line">	area = get_vm_area(vma-&gt;vm_end - vma-&gt;vm_start, VM_IOREMAP);</span><br><span class="line">	<span class="comment">// 记录内核虚拟地址</span></span><br><span class="line">	alloc-&gt;buffer = area-&gt;addr;</span><br><span class="line">	alloc-&gt;user_buffer_offset = vma-&gt;vm_start - (<span class="type">uintptr_t</span>)alloc-&gt;buffer;</span><br><span class="line">	mutex_unlock(&amp;binder_alloc_mmap_lock);</span><br><span class="line">	<span class="comment">// 为每个页面申请一个结构体 struct binder_lru_page</span></span><br><span class="line">	alloc-&gt;pages = kzalloc(<span class="keyword">sizeof</span>(alloc-&gt;pages[<span class="number">0</span>]) *</span><br><span class="line">				((vma-&gt;vm_end - vma-&gt;vm_start) / PAGE_SIZE),</span><br><span class="line">				GFP_KERNEL);</span><br><span class="line">	alloc-&gt;buffer_size = vma-&gt;vm_end - vma-&gt;vm_start;</span><br><span class="line">	<span class="comment">// binder transactions的缓冲区</span></span><br><span class="line">	buffer = kzalloc(<span class="keyword">sizeof</span>(*buffer), GFP_KERNEL);</span><br><span class="line"></span><br><span class="line">	buffer-&gt;data = alloc-&gt;buffer;</span><br><span class="line">	list_add(&amp;buffer-&gt;entry, &amp;alloc-&gt;buffers);</span><br><span class="line">	buffer-&gt;<span class="built_in">free</span> = <span class="number">1</span>;</span><br><span class="line">	binder_insert_free_buffer(alloc, buffer);</span><br><span class="line">	alloc-&gt;free_async_space = alloc-&gt;buffer_size / <span class="number">2</span>;</span><br><span class="line">	barrier();</span><br><span class="line">	alloc-&gt;vma = vma;</span><br><span class="line">	alloc-&gt;vma_vm_mm = vma-&gt;vm_mm;</span><br><span class="line">	<span class="comment">/* Same as mmgrab() in later kernel versions */</span></span><br><span class="line">	<span class="type">atomic_inc</span>(&amp;alloc-&gt;vma_vm_mm-&gt;mm_count);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ioctl函数"><a class="header-anchor" href="#ioctl函数">¶</a>ioctl函数</h2>
+<p><code>binder_ioctl()</code>是binder驱动的关键，主要功能都是在这个函数实现。首先从<code>private_data</code>拿到<code>binder_proc</code>，然后获取<code>binder_thread</code>，这个结构体表示执行ioctl的线程。如果是第一次执行，<code>binder_get_thread()</code>会创建相关的结构体并初始化。进程所有的线程以红黑树的形式存储在<code>proc-&gt;threads</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">long</span> <span class="title function_">binder_ioctl</span><span class="params">(<span class="keyword">struct</span> file *filp, <span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> =</span> filp-&gt;private_data;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_thread</span> *<span class="title">thread</span>;</span></span><br><span class="line">	...</span><br><span class="line">	thread = binder_get_thread(proc);</span><br></pre></td></tr></table></figure>
+<p>然后就是一个大的<code>switch</code>语句，根据不同的<code>cmd</code>执行不同的函数。下表列出了所有<code>cmd</code>、对应的参数，以及功能。其中最关键的命令非<code>BINDER_WRITE_READ</code>莫属。</p>
+<table>
+<thead>
+<tr>
+<th>cmd</th>
+<th>arg</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BINDER_WRITE_READ</td>
+<td>指向<code>struct binder_write_read</code>的指针。</td>
+<td>使用函数<code>binder_ioctl_write_read()</code>处理。</td>
+</tr>
+<tr>
+<td>BINDER_SET_MAX_THREADS</td>
+<td>整数。</td>
+<td>设置<code>proc-&gt;max_threads</code>。</td>
+</tr>
+<tr>
+<td>BINDER_SET_CONTEXT_MGR</td>
+<td>None</td>
+<td><code>ServiceManager</code>进程的专属命令。</td>
+</tr>
+<tr>
+<td>BINDER_THREAD_EXIT</td>
+<td>None</td>
+<td>从<code>proc-&gt;threads</code>中删除线程，释放相关资源</td>
+</tr>
+<tr>
+<td>BINDER_VERSION</td>
+<td>指向<code>struct binder_version</code>的指针</td>
+<td>版本号存储在宏BINDER_CURRENT_PROTOCOL_VERSION</td>
+</tr>
+<tr>
+<td>BINDER_GET_NODE_DEBUG_INFO</td>
+<td>指向<code>struct binder_node_debug_info</code>的指针</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="BINDER-SET-CONTEXT-MGR"><a class="header-anchor" href="#BINDER-SET-CONTEXT-MGR">¶</a>BINDER_SET_CONTEXT_MGR</h3>
+<p><code>ServiceManager</code>在执行完mmap()函数后，会调用此命令。这个命令由函数<code>binder_ioctl_set_ctx_mgr()</code>处理。首先检查调用的进程是否符合要求，然后新建一个<code>binder_node</code>，并保存到<code>context-&gt;binder_context_mgr_node</code>。</p>
+<p><code>binder_context</code>与binder设备有关，保存在设备结构体<code>binder_device</code>中，主要保存了mgr有关的信息。<code>binder_node</code>与Service有关，每个node表示一个service。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">binder_ioctl_set_ctx_mgr</span><span class="params">(<span class="keyword">struct</span> file *filp)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> =</span> filp-&gt;private_data;</span><br><span class="line">	<span class="comment">// open() 函数会为 proc-&gt;context赋值，最终指向 struct binder_device中的context</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_context</span> *<span class="title">context</span> =</span> proc-&gt;context;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_node</span> *<span class="title">new_node</span>;</span></span><br><span class="line">	<span class="type">kuid_t</span> curr_euid = current_euid();</span><br><span class="line"></span><br><span class="line">	mutex_lock(&amp;context-&gt;context_mgr_node_lock);</span><br><span class="line">	<span class="comment">// 检查context mgr是否已经设置，检查uid / euid是否符号要求</span></span><br><span class="line">	new_node = binder_new_node(proc, <span class="literal">NULL</span>); <span class="comment">// 每个node表示一个service</span></span><br><span class="line"></span><br><span class="line">	binder_node_lock(new_node);</span><br><span class="line">	new_node-&gt;local_weak_refs++;</span><br><span class="line">	new_node-&gt;local_strong_refs++;</span><br><span class="line">	new_node-&gt;has_strong_ref = <span class="number">1</span>;</span><br><span class="line">	new_node-&gt;has_weak_ref = <span class="number">1</span>;</span><br><span class="line">	<span class="comment">// 表示ServiceManager的node</span></span><br><span class="line">	context-&gt;binder_context_mgr_node = new_node;</span><br><span class="line">	binder_node_unlock(new_node);</span><br><span class="line">	binder_put_node(new_node);</span><br><span class="line">out:</span><br><span class="line">	mutex_unlock(&amp;context-&gt;context_mgr_node_lock);</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="BINDER-WRITE-READ"><a class="header-anchor" href="#BINDER-WRITE-READ">¶</a>BINDER_WRITE_READ</h3>
+<p><code>BINDER_WRITE_READ</code>命令通过函数<code>binder_ioctl_write_read()</code>来处理，前三个参数来自于<code>ioctl()</code>函数的参数，<code>thread</code>是<code>binder_get_thread(proc)</code>的返回值。函数开头，首先将参数复制到结构体<code>struct binder_write_read</code>，这个结构体比较好理解，包含了读写的字节数以及对应的缓冲区指针。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">binder_write_read</span> &#123;</span></span><br><span class="line">	<span class="type">binder_size_t</span>		write_size;	<span class="comment">/* 需要写入的字节数 */</span></span><br><span class="line">	<span class="type">binder_size_t</span>		write_consumed;	<span class="comment">/* 驱动消耗的字节数 */</span></span><br><span class="line">	<span class="type">binder_uintptr_t</span>	write_buffer;	<span class="comment">/* 用户空间指针，指向要写入的数据 */</span></span><br><span class="line">	<span class="type">binder_size_t</span>		read_size;	<span class="comment">/* 需要读取的字节数 */</span></span><br><span class="line">	<span class="type">binder_size_t</span>		read_consumed;	<span class="comment">/* 驱动消耗的字节数 */</span></span><br><span class="line">	<span class="type">binder_uintptr_t</span>	read_buffer;	<span class="comment">/* 用户空间指针，读取的数据复制到此buffer */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">binder_ioctl_write_read</span><span class="params">(<span class="keyword">struct</span> file *filp,</span></span><br><span class="line"><span class="params">				<span class="type">unsigned</span> <span class="type">int</span> cmd, <span class="type">unsigned</span> <span class="type">long</span> arg,</span></span><br><span class="line"><span class="params">				<span class="keyword">struct</span> binder_thread *thread)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_proc</span> *<span class="title">proc</span> =</span> filp-&gt;private_data;</span><br><span class="line">	<span class="type">void</span> __user *ubuf = (<span class="type">void</span> __user *)arg;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_write_read</span> <span class="title">bwr</span>;</span></span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">if</span> (copy_from_user(&amp;bwr, ubuf, <span class="keyword">sizeof</span>(bwr))) &#123;</span><br><span class="line">		ret = -EFAULT;</span><br><span class="line">		<span class="keyword">goto</span> out;</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br></pre></td></tr></table></figure>
+<p>然后根据<code>bwr.write_size</code>和<code>bwr.read_size</code>的值决定是否调用<code>binder_thread_write()</code>、<code>binder_thread_read()</code>做进一步处理。最后将修改后的bwr结构体复制到用户空间，因为driver会更改<code>bwr.write_consumed</code>和<code>bwr.read_consumed</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">	if (bwr.write_size &gt; 0) &#123;</span><br><span class="line">		ret = binder_thread_write(proc, thread,</span><br><span class="line">					  bwr.write_buffer, bwr.write_size,</span><br><span class="line">					  &amp;bwr.write_consumed);</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br><span class="line">	if (bwr.read_size &gt; 0) &#123;</span><br><span class="line">		ret = binder_thread_read(proc, thread, bwr.read_buffer,</span><br><span class="line">					 bwr.read_size, &amp;bwr.read_consumed,</span><br><span class="line">					 filp-&gt;f_flags &amp; O_NONBLOCK);</span><br><span class="line">		if (!binder_worklist_empty_ilocked(&amp;proc-&gt;todo))</span><br><span class="line">			binder_wakeup_proc_ilocked(proc);</span><br><span class="line">		...</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">	if (copy_to_user(ubuf, &amp;bwr, sizeof(bwr))) &#123;</span><br><span class="line">		ret = -EFAULT;</span><br><span class="line">		goto out;</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="binder-thread-write"><a class="header-anchor" href="#binder-thread-write">¶</a>binder_thread_write()</h4>
+<p>函数<code>binder_thread_write()</code>非常长，但好在结构比较清晰。指针<code>ptr</code>是一个用户空间指针，始终指向待处理的字节。不断的从<code>ptr</code>取出<code>cmd</code>，然后根据cmd进行不同的处理，最后更新<code>consumed</code>，直到buffer所有的数据处理完毕。也就是说，<code>bwr.write_buffer</code>由若干个cmd和紧随其后的可选固定长度参数构成，参数的长度根据cmd的不同而不同。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">binder_thread_write</span><span class="params">(<span class="keyword">struct</span> binder_proc *proc,</span></span><br><span class="line"><span class="params">			<span class="keyword">struct</span> binder_thread *thread,</span></span><br><span class="line"><span class="params">			<span class="type">binder_uintptr_t</span> binder_buffer, <span class="type">size_t</span> size,</span></span><br><span class="line"><span class="params">			<span class="type">binder_size_t</span> *consumed)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">uint32_t</span> cmd;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">binder_context</span> *<span class="title">context</span> =</span> proc-&gt;context;</span><br><span class="line">	<span class="type">void</span> __user *buffer = (<span class="type">void</span> __user *)(<span class="type">uintptr_t</span>)binder_buffer;</span><br><span class="line">	<span class="type">void</span> __user *ptr = buffer + *consumed;</span><br><span class="line">	<span class="type">void</span> __user *end = buffer + size;</span><br><span class="line">	<span class="keyword">while</span> (ptr &lt; end &amp;&amp; thread-&gt;return_error.cmd == BR_OK) &#123;</span><br><span class="line">		<span class="type">int</span> ret;</span><br><span class="line">		<span class="keyword">if</span> (get_user(cmd, (<span class="type">uint32_t</span> __user *)ptr))</span><br><span class="line">			<span class="keyword">return</span> -EFAULT;</span><br><span class="line">		ptr += <span class="keyword">sizeof</span>(<span class="type">uint32_t</span>);</span><br><span class="line">		...</span><br><span class="line">		<span class="keyword">switch</span> (cmd) &#123;</span><br><span class="line">			...</span><br><span class="line">			*consumed = ptr - buffer;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>下表列出了<code>binder_thread_write</code>支持的所有cmd。后面结合具体的使用场景，再来分析这些命令的作用。</p>
+<table>
+<thead>
+<tr>
+<th>binder command protocol</th>
+<th>param</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BC_INCREFS<br>BC_ACQUIRE<br> BC_RELEASE<br> BC_DECREFS</td>
+<td>无符号32位整数，target</td>
+<td>增加或减少引用计数</td>
+</tr>
+<tr>
+<td>BC_INCREFS_DONE<br>BC_ACQUIRE_DONE</td>
+<td>两个指针参数，依次是node_ptr和cookie</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_ATTEMPT_ACQUIRE<br>BC_ACQUIRE_RESULT</td>
+<td>None</td>
+<td>这两个命令不支持</td>
+</tr>
+<tr>
+<td>BC_FREE_BUFFER</td>
+<td>一个指针参数，data_ptr</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_TRANSACTION_SG<br>BC_REPLY_SG</td>
+<td>有一个<code>struct binder_transaction_data_sg</code>参数</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_TRANSACTION<br>BC_REPLY</td>
+<td>有一个<code>struct binder_transaction_data</code>参数</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_REGISTER_LOOPER</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_ENTER_LOOPER</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_EXIT_LOOPER</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_REQUEST_DEATH_NOTIFICATION<br>BC_CLEAR_DEATH_NOTIFICATION</td>
+<td>一个无符号32位整数，target；<br>一个指针参数，cookie</td>
+<td></td>
+</tr>
+<tr>
+<td>BC_DEAD_BINDER_DONE</td>
+<td>一个指针参数，cookie</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>TODO：详细理解每一个cmd的作用</p>
+<h4 id="binder-thread-read"><a class="header-anchor" href="#binder-thread-read">¶</a>binder_thread_read()</h4>
+<p><code>binder_thread_read()</code>函数比较长，不是很好理解。主要工作流程如下：</p>
+<ol>
+<li>进入阻塞状态，等待<code>binder_work</code></li>
+<li>如果队列不为空，取出一个<code>binder_work</code></li>
+<li>根据work的不同类型，进行不同的处理</li>
+<li>给读取的线程回复一个BR命令，某些命令还会带一个参数。</li>
+</ol>
+<p>下面来分析实现代码。首先，设置线程的等待标志位。Binder同时支持阻塞和非阻塞模式，假设是阻塞模式，则调用<code>binder_wait_for_work()</code>等待一个<code>binder_work</code>的到来。<code>binder_wait_for_work()</code>基于Linux内核的等待队列实现，等待队列是<code>thread-&gt;wait</code>。如果当前线程已经有<code>binder_work</code>，则不会阻塞，直接返回。<code>binder_work</code>是写入线程发来的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">thread-&gt;looper |= BINDER_LOOPER_STATE_WAITING;</span><br><span class="line"><span class="keyword">if</span> (non_block) &#123;</span><br><span class="line">	<span class="keyword">if</span> (!binder_has_work(thread, wait_for_proc_work))</span><br><span class="line">		ret = -EAGAIN;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	ret = binder_wait_for_work(thread, wait_for_proc_work);</span><br><span class="line">&#125;</span><br><span class="line">thread-&gt;looper &amp;= ~BINDER_LOOPER_STATE_WAITING;</span><br></pre></td></tr></table></figure>
+<p>然后进入一个死循环，根据work的不同类型进行不同的处理，具体参考下方代码块的注释。处理完毕后给读取线程的缓冲区写入一个BR命令，部分BR命令还有一个参数。<code>BINDER_WORK_TRANSACTION</code>的处理过于复杂，所以放在了<code>switch</code>语句的后面处理。暂时先不具体分析每个<code>work type</code>是怎么处理的，后面结合具体的使用场景再分析。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	w = binder_dequeue_work_head_ilocked(<span class="built_in">list</span>);</span><br><span class="line">	<span class="keyword">switch</span> (w-&gt;type) &#123;</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_TRANSACTION: &#123; <span class="comment">// 处理`binder_transaction`结构体</span></span><br><span class="line">		t = container_of(w, <span class="keyword">struct</span> binder_transaction, work);</span><br><span class="line">	&#125; <span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_RETURN_ERROR: &#123; <span class="comment">// 直接在读取线程的缓冲区写入`e-&gt;cmd`</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">binder_error</span> *<span class="title">e</span> =</span> container_of( w, <span class="keyword">struct</span> binder_error, work);</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125; <span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_TRANSACTION_COMPLETE: &#123;</span><br><span class="line">		<span class="comment">// 直接在读取线程的缓冲区写入命令`BR_TRANSACTION_COMPLETE`</span></span><br><span class="line">		cmd = BR_TRANSACTION_COMPLETE;</span><br><span class="line">		put_user(cmd, (<span class="type">uint32_t</span> __user *)ptr)：</span><br><span class="line">		ptr += <span class="keyword">sizeof</span>(<span class="type">uint32_t</span>);</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125; <span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_NODE: &#123; <span class="comment">// 处理`binder_node`结构体</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">binder_node</span> *<span class="title">node</span> =</span> container_of(w, <span class="keyword">struct</span> binder_node, work);</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125; <span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_DEAD_BINDER:</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_DEAD_BINDER_AND_CLEAR:</span><br><span class="line">	<span class="keyword">case</span> BINDER_WORK_CLEAR_DEATH_NOTIFICATION: &#123; <span class="comment">// 处理`binder_ref_death`结构体</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">binder_ref_death</span> *<span class="title">death</span>;</span></span><br><span class="line">		death = container_of(w, <span class="keyword">struct</span> binder_ref_death, work);</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125; <span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (!t) <span class="keyword">continue</span>;</span><br><span class="line">	<span class="comment">// 处理binder_transaction结构体</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>BR命令的全程是<code>binder driver return protocol</code>，由binder driver发送给service进程。下表列出了所有的BR命令及其对应的参数。</p>
+<table>
+<thead>
+<tr>
+<th>binder return protocol</th>
+<th>param</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BR_OK</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr>
+<td>BR_TRANSACTION<br>BR_REPLY</td>
+<td>struct binder_transaction_data</td>
+<td>the received command.</td>
+</tr>
+<tr>
+<td>BR_DEAD_REPLY</td>
+<td>None</td>
+<td>The target of the last transaction (either a bcTRANSACTION or a bcATTEMPT_ACQUIRE) is no longer with us.</td>
+</tr>
+<tr>
+<td>BR_INCREFS<br>BR_ACQUIRE<br>BR_RELEASE<br>BR_DECREFS</td>
+<td>struct binder_ptr_cookie</td>
+<td>ptr to binder, cookie for binder</td>
+</tr>
+<tr>
+<td>BR_NOOP</td>
+<td>None</td>
+<td>什么都不做，检查下一个命令。 它的存在主要是可以用 BR_SPAWN_LOOPER 命令替换它。</td>
+</tr>
+<tr>
+<td>BR_SPAWN_LOOPER</td>
+<td>None</td>
+<td>驱动程序已确定进程没有线程等待为传入事务提供服务。 当一个进程接收到这个命令时，它必须产生一个新的服务线程并通过 bcENTER_LOOPER 注册它。</td>
+</tr>
+<tr>
+<td>BR_DEAD_BINDER</td>
+<td>binder_uintptr_t, cookie</td>
+<td></td>
+</tr>
+<tr>
+<td>BR_CLEAR_DEATH_NOTIFICATION_DONE</td>
+<td>binder_uintptr_t, cookie</td>
+<td></td>
+</tr>
+<tr>
+<td>BR_FAILED_REPLY</td>
+<td>None</td>
+<td>最后一个事务（bcTRANSACTION 或 bcATTEMPT_ACQUIRE）失败（例如内存不足）。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Binder协议"><a class="header-anchor" href="#Binder协议">¶</a>Binder协议</h2>
+<p>之前的分析，更多是语法层面的分析，还没有深入理解分析Binder的数据结构。所以，接下来根据具体的通信实例，来深入理解Binder协议，理解BC、BR命令及其参数的含义。</p>
+<h3 id="注册Service"><a class="header-anchor" href="#注册Service">¶</a>注册Service</h3>
+<p><a href="#binder%E8%AE%BE%E5%A4%87%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95">binder设备使用方法</a>提到过，进程或线程可以向ServiceManager注册成为Service。所以现在来看看注册为Service需要发送什么样的数据。下面的代码片段来自<code>MediaPlayerService.cpp</code>，<code>defaultServiceManager()</code>会获取一个handle为0的<code>BpBinder</code>对象，并以此创建出一个<code>BpServiceManager</code>对象，BpBinder对象保存在<code>mRemote</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/av/media/libmediaplayerservice/MediaPlayerService.cpp</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">MediaPlayerService::instantiate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">defaultServiceManager</span>()-&gt;<span class="built_in">addService</span>(</span><br><span class="line">            <span class="built_in">String16</span>(<span class="string">&quot;media.player&quot;</span>), <span class="keyword">new</span> <span class="built_in">MediaPlayerService</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是<code>BpServiceManager::addService()</code>的实现。首先使用<code>Parcel</code>打包数据。<code>Parcel</code>是一种数据容器，提供了非常多的接口来打包各种类型的数据，打包和解包需要使用对应的接口即可。然后调用<code>remote()-&gt;transact()</code>发送并接收返回的消息。<code>remote()</code>返回<code>mRemote</code>，而<code>mRemote</code>是handle等于0的<code>BpBinder</code>对象，所以<code>remote()-&gt;transact()</code>实际上是将消息发送给ServiceManager。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/native/libs/binder/IServiceManager.cpp</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BpServiceManager</span> : <span class="keyword">public</span> BpInterface&lt;IServiceManager&gt; &#123;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> <span class="type">status_t</span> <span class="title">addService</span><span class="params">(<span class="type">const</span> String16&amp; name, <span class="type">const</span> sp&lt;IBinder&gt;&amp; service,</span></span></span><br><span class="line"><span class="params"><span class="function">                                <span class="type">bool</span> allowIsolated, <span class="type">int</span> dumpsysPriority)</span> </span>&#123;</span><br><span class="line">        Parcel data, reply;</span><br><span class="line">        data.<span class="built_in">writeInterfaceToken</span>(IServiceManager::<span class="built_in">getInterfaceDescriptor</span>());</span><br><span class="line">        data.<span class="built_in">writeString16</span>(name);</span><br><span class="line">        data.<span class="built_in">writeStrongBinder</span>(service); <span class="comment">// 对象类型是BINDER_TYPE_HANDLE</span></span><br><span class="line">        data.<span class="built_in">writeInt32</span>(allowIsolated ? <span class="number">1</span> : <span class="number">0</span>); <span class="comment">// allowIsolated 默认等于 false</span></span><br><span class="line">        data.<span class="built_in">writeInt32</span>(dumpsysPriority);       <span class="comment">// dumpsysPriority 默认等于 DUMP_FLAG_PRIORITY_DEFAULT</span></span><br><span class="line">        <span class="type">status_t</span> err = <span class="built_in">remote</span>()-&gt;<span class="built_in">transact</span>(ADD_SERVICE_TRANSACTION, data, &amp;reply);</span><br><span class="line">        <span class="keyword">return</span> err == NO_ERROR ? reply.<span class="built_in">readExceptionCode</span>() : err;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>BpBinder::transact()</code>实际上会借助<code>IPCThreadState::transact()</code>来完成实际的发送动作，<code>IPCThreadState</code>对象每个线程有且只有一个。下面是函数的具体实现，<code>handle=0</code>，<code>code=ADD_SERVICE_TRANSACTION</code>，<code>data</code>在<code>BpServiceManager::addService()</code>函数中写入了一些对象，<code>flags</code>是默认值0，<code>reply</code>是ServiceManager返回的值。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// frameworks/native/libs/binder/IPCThreadState.cpp, flags 默认为0</span></span><br><span class="line"><span class="comment">// 仅保留主要代码，删除了log和错误处理</span></span><br><span class="line"><span class="function"><span class="type">status_t</span> <span class="title">IPCThreadState::transact</span><span class="params">(<span class="type">int32_t</span> handle,</span></span></span><br><span class="line"><span class="params"><span class="function">                                  <span class="type">uint32_t</span> code, <span class="type">const</span> Parcel&amp; data,</span></span></span><br><span class="line"><span class="params"><span class="function">                                  Parcel* reply, <span class="type">uint32_t</span> flags)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">status_t</span> err;</span><br><span class="line">    flags |= TF_ACCEPT_FDS;</span><br><span class="line">    err = <span class="built_in">writeTransactionData</span>(BC_TRANSACTION, flags, handle, code, data, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> ((flags &amp; TF_ONE_WAY) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (reply) &#123;</span><br><span class="line">            err = <span class="built_in">waitForResponse</span>(reply);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Parcel fakeReply;</span><br><span class="line">            err = <span class="built_in">waitForResponse</span>(&amp;fakeReply);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        err = <span class="built_in">waitForResponse</span>(<span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>writeTransactionData()</code>负责将待发送数据的相关信息组合成<code>binder_transaction_data</code>结构，然后将<code>cmd</code>和<code>binder_transaction_data</code>结构写入到<code>mOut</code>对象，这也是一个<code>Parcel</code>对象。如下代码所示。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">status_t</span> <span class="title">IPCThreadState::writeTransactionData</span><span class="params">(<span class="type">int32_t</span> cmd, <span class="type">uint32_t</span> binderFlags,</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">int32_t</span> handle, <span class="type">uint32_t</span> code, <span class="type">const</span> Parcel&amp; data, <span class="type">status_t</span>* statusBuffer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    binder_transaction_data tr;</span><br><span class="line">    tr.target.ptr = <span class="number">0</span>; <span class="comment">/* Don&#x27;t pass uninitialized stack data to a remote process */</span></span><br><span class="line">    tr.target.handle = handle;  <span class="comment">// 等于0，代表ServiceManager</span></span><br><span class="line">    tr.code = code;             <span class="comment">// ADD_SERVICE_TRANSACTION</span></span><br><span class="line">    tr.flags = binderFlags;</span><br><span class="line">    tr.cookie = <span class="number">0</span>;</span><br><span class="line">    tr.sender_pid = <span class="number">0</span>;</span><br><span class="line">    tr.sender_euid = <span class="number">0</span>;</span><br><span class="line">    tr.data_size = data.<span class="built_in">ipcDataSize</span>();    <span class="comment">// 待发送数据的大小</span></span><br><span class="line">    tr.data.ptr.buffer = data.<span class="built_in">ipcData</span>();  <span class="comment">// 指向待发送数据的首地址</span></span><br><span class="line">    <span class="comment">// 待发送数据中对象的数量</span></span><br><span class="line">    tr.offsets_size = data.<span class="built_in">ipcObjectsCount</span>()*<span class="built_in">sizeof</span>(<span class="type">binder_size_t</span>);</span><br><span class="line">    tr.data.ptr.offsets = data.<span class="built_in">ipcObjects</span>(); <span class="comment">// 对象相对tr.data.ptr.buffer的偏移</span></span><br><span class="line"></span><br><span class="line">    mOut.<span class="built_in">writeInt32</span>(cmd);</span><br><span class="line">    mOut.<span class="built_in">write</span>(&amp;tr, <span class="built_in">sizeof</span>(tr));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> NO_ERROR;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>IPCThreadState::waitForResponse()</code>主要完成以下两个工作：</p>
+<ol>
+<li>调用<code>talkWithDriver()</code>，将<code>mOut</code>发送到driver，然后等待driver回复的信息并写入到<code>mIn</code></li>
+<li>根据<code>mIn</code>中的数据，进行不同的处理</li>
+</ol>
+<p>由于现在还不知道driver会返回什么数据，所以这个函数先不分析。先来看看<code>talkWithDriver()</code>。首先判断<code>mProcess</code>对象的文件描述符是否大于0，然后根据<code>mIn</code>和<code>mOut</code>来构建<code>binder_write_read</code>结构体，最后调用ioctl的<code>BINDER_WRITE_READ</code>命令将数据发送到driver。不妨回头看看前面对<a href="#BINDER_WRITE_READ">BINDER_WRITE_READ</a>的分析，两个地方对上了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">status_t</span> <span class="title">IPCThreadState::talkWithDriver</span><span class="params">(<span class="type">bool</span> doReceive)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    binder_write_read bwr;</span><br><span class="line">    <span class="comment">// Is the read buffer empty?</span></span><br><span class="line">    <span class="type">const</span> <span class="type">bool</span> needRead = mIn.<span class="built_in">dataPosition</span>() &gt;= mIn.<span class="built_in">dataSize</span>();</span><br><span class="line">    <span class="comment">// We don&#x27;t want to write anything if we are still reading</span></span><br><span class="line">    <span class="comment">// from data left in the input buffer and the caller</span></span><br><span class="line">    <span class="comment">// has requested to read the next data.</span></span><br><span class="line">    <span class="type">const</span> <span class="type">size_t</span> outAvail = (!doReceive || needRead) ? mOut.<span class="built_in">dataSize</span>() : <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    bwr.write_size = outAvail;</span><br><span class="line">    bwr.write_buffer = (<span class="type">uintptr_t</span>)mOut.<span class="built_in">data</span>();</span><br><span class="line">    <span class="comment">// This is what we&#x27;ll read.</span></span><br><span class="line">    <span class="keyword">if</span> (doReceive &amp;&amp; needRead) &#123;</span><br><span class="line">        bwr.read_size = mIn.<span class="built_in">dataCapacity</span>();</span><br><span class="line">        bwr.read_buffer = (<span class="type">uintptr_t</span>)mIn.<span class="built_in">data</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        bwr.read_size = <span class="number">0</span>;</span><br><span class="line">        bwr.read_buffer = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Return immediately if there is nothing to do.</span></span><br><span class="line">    <span class="keyword">if</span> ((bwr.write_size == <span class="number">0</span>) &amp;&amp; (bwr.read_size == <span class="number">0</span>)) <span class="keyword">return</span> NO_ERROR;</span><br><span class="line"></span><br><span class="line">    bwr.write_consumed = <span class="number">0</span>;</span><br><span class="line">    bwr.read_consumed = <span class="number">0</span>;</span><br><span class="line">    <span class="type">status_t</span> err;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">ioctl</span>(mProcess-&gt;mDriverFD, BINDER_WRITE_READ, &amp;bwr) &gt;= <span class="number">0</span>)</span><br><span class="line">            err = NO_ERROR;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            err = -errno;</span><br><span class="line">    &#125; <span class="keyword">while</span> (err == -EINTR);</span><br><span class="line">    <span class="comment">// 一些错误处理，略</span></span><br><span class="line">    <span class="keyword">return</span> err;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下图展示了从<code>addService()</code>到<code>talkWithDriver()</code>是如何对数据封装的，箭头表示指针指向对应的数据结构。前面提到过，不同的BC指令会带有不同的参数，<code>BC_TRANSACTION</code>的参数是一个<code>binder_transaction_data</code>结构体，这个结构体表明了要发送的数据、目标以及如何处理数据。</p>
+<p><img src="https://image.pkemb.com/image/202204162039111.png" alt=""></p>
+<p>driver使用函数<code>binder_transaction()</code>来处理<code>BC_TRANSACTION</code>，这个函数非常的长（600行左右），并且和<code>BC_REPLAY</code>共用一个函数，所以分析起来有点困难。当<code>replay=0</code>是，函数的主要流程如下：</p>
+<ol>
+<li>根据target.handle找到target_node / target_proc</li>
+<li>构建结构体 binder_transaction</li>
+<li>依次取出<code>tr-&gt;data.buffer</code>中的binder对象，并根据不同的对象类型进行不同的处理，并处理结果附加到binder_transaction</li>
+<li>t-&gt;work.type = BINDER_WORK_TRANSACTION</li>
+<li>调用<code>binder_proc_transaction()</code>，将<code>t-&gt;work</code>附加到<code>target_proc-&gt;todo</code>队列，然后唤醒target_proc。</li>
+</ol>
+<p><code>addService()</code>写入了一个类型为<code>BINDER_TYPE_HANDLE</code>的binder对象，其存储了即将注册的service的handle值。<code>binder_translate_handle()</code>的工作是获取注册service的<code>binder_node</code>，并增加引用。现在，这里的<code>target_proc</code>是<code>service manager</code>，唤醒目标进程后，<code>binder_thread_read()</code>会继续运行。注意这里的work type是<code>BINDER_WORK_TRANSACTION</code>。</p>
+<p>TODO：binder_node是什么时候在driver注册的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">binder_transaction</span><span class="params">(</span></span><br><span class="line"><span class="params">	<span class="keyword">struct</span> binder_proc *proc,</span></span><br><span class="line"><span class="params">	<span class="keyword">struct</span> binder_thread *thread,       <span class="comment">// 想注册成为Service的线程</span></span></span><br><span class="line"><span class="params">	<span class="keyword">struct</span> binder_transaction_data *tr, <span class="comment">// 在函数writeTransactionData()构建的结构体</span></span></span><br><span class="line"><span class="params">	<span class="type">int</span> reply,                          <span class="comment">// 0, replay = cmd == BC_REPLY</span></span></span><br><span class="line"><span class="params">	<span class="type">binder_size_t</span> extra_buffers_size)</span>   <span class="comment">// 0</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (reply) &#123;  <span class="comment">// 处理BC_REPLAY</span></span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;      <span class="comment">// 处理BC_TRANSACTION</span></span><br><span class="line">		<span class="comment">// 找到 target_node / target_proc</span></span><br><span class="line">		<span class="keyword">if</span> (tr-&gt;target.handle) &#123; <span class="comment">// 目标进程不是ServiceManager</span></span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			target_node = context-&gt;binder_context_mgr_node;</span><br><span class="line">			target_node = binder_get_node_refs_for_txn(target_node, &amp;target_proc, &amp;return_error);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 构建 binder_transaction</span></span><br><span class="line">	t-&gt;code = tr-&gt;code;   <span class="comment">// ADD_SERVICE_TRANSACTION</span></span><br><span class="line">	t-&gt;buffer-&gt;target_node = target_node;</span><br><span class="line">	<span class="keyword">for</span> (; offp &lt; off_end; offp++) &#123;</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">binder_object_header</span> *<span class="title">hdr</span>;</span></span><br><span class="line">		hdr = (<span class="keyword">struct</span> binder_object_header *)(t-&gt;buffer-&gt;data + *offp);</span><br><span class="line">		<span class="keyword">switch</span> (hdr-&gt;type) &#123;</span><br><span class="line">			<span class="comment">// 根据不同的类型进行不同的处理</span></span><br><span class="line">			<span class="keyword">case</span> BINDER_TYPE_HANDLE: &#123;</span><br><span class="line">				<span class="class"><span class="keyword">struct</span> <span class="title">flat_binder_object</span> *<span class="title">fp</span>;</span></span><br><span class="line">				fp = to_flat_binder_object(hdr);</span><br><span class="line">				ret = binder_translate_handle(fp, t, thread);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	t-&gt;work.type = BINDER_WORK_TRANSACTION;</span><br><span class="line">	<span class="keyword">if</span> (reply) &#123;  <span class="comment">// 处理BC_REPLAY</span></span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (!(t-&gt;flags &amp; TF_ONE_WAY)) &#123;</span><br><span class="line">		binder_proc_transaction(t, target_proc, target_thread);</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		binder_proc_transaction(t, target_proc, <span class="literal">NULL</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从前面<a href="#binder_thread_read">binder_thread_read()</a>的分析看，<code>BINDER_WORK_TRANSACTION</code>的处理在<code>binder_thread_read()</code>函数的最后面，其主要工作是根据<code>binder_transaction</code>结构体构造<code>binder_transaction_data</code>结构体，然后写回到用户空间的buffer。注意这里的命令是<code>BR_TRANSACTION</code>，<code>tr.code</code>是<code>ADD_SERVICE_TRANSACTION</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">	<span class="keyword">if</span> (t-&gt;buffer-&gt;target_node) &#123;</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">binder_node</span> *<span class="title">target_node</span> =</span> t-&gt;buffer-&gt;target_node;</span><br><span class="line">		tr.target.ptr = target_node-&gt;ptr;</span><br><span class="line">		tr.cookie =  target_node-&gt;cookie;</span><br><span class="line">		cmd = BR_TRANSACTION;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	&#125;</span><br><span class="line">	tr.code = t-&gt;code;   <span class="comment">// ADD_SERVICE_TRANSACTION</span></span><br><span class="line">	tr.flags = t-&gt;flags;</span><br><span class="line"></span><br><span class="line">	tr.data_size = t-&gt;buffer-&gt;data_size;</span><br><span class="line">	tr.offsets_size = t-&gt;buffer-&gt;offsets_size;</span><br><span class="line">	tr.data.ptr.buffer = (<span class="type">binder_uintptr_t</span>)</span><br><span class="line">		((<span class="type">uintptr_t</span>)t-&gt;buffer-&gt;data +</span><br><span class="line">		binder_alloc_get_user_buffer_offset(&amp;proc-&gt;alloc));</span><br><span class="line">	tr.data.ptr.offsets = tr.data.ptr.buffer +</span><br><span class="line">				ALIGN(t-&gt;buffer-&gt;data_size, <span class="keyword">sizeof</span>(<span class="type">void</span> *));</span><br><span class="line">	put_user(cmd, (<span class="type">uint32_t</span> __user *)ptr);</span><br><span class="line">	ptr += <span class="keyword">sizeof</span>(<span class="type">uint32_t</span>);</span><br><span class="line">	copy_to_user(ptr, &amp;tr, <span class="keyword">sizeof</span>(tr));</span><br><span class="line">	ptr += <span class="keyword">sizeof</span>(tr);</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后看service manager对消息的处理，历经千难万险，SM终于拿到了消息，并完成了添加service的动作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">svcmgr_handler</span><span class="params">(<span class="keyword">struct</span> binder_state *bs,</span></span></span><br><span class="line"><span class="params"><span class="function">                   <span class="keyword">struct</span> binder_transaction_data *txn,</span></span></span><br><span class="line"><span class="params"><span class="function">                   <span class="keyword">struct</span> binder_io *msg,</span></span></span><br><span class="line"><span class="params"><span class="function">                   <span class="keyword">struct</span> binder_io *reply)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	<span class="keyword">switch</span>(txn-&gt;code) &#123;</span><br><span class="line">	<span class="keyword">case</span> SVC_MGR_ADD_SERVICE:</span><br><span class="line">		s = <span class="built_in">bio_get_string16</span>(msg, &amp;len);</span><br><span class="line">		<span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		handle = <span class="built_in">bio_get_ref</span>(msg);</span><br><span class="line">		allow_isolated = <span class="built_in">bio_get_uint32</span>(msg) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">		dumpsys_priority = <span class="built_in">bio_get_uint32</span>(msg);</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">do_add_service</span>(bs, s, len, handle, txn-&gt;sender_euid, allow_isolated, dumpsys_priority,</span><br><span class="line">				txn-&gt;sender_pid))</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="获取service"><a class="header-anchor" href="#获取service">¶</a>获取service</h3>
+<p>TODO</p>
+<h2 id="参考资料"><a class="header-anchor" href="#参考资料">¶</a>参考资料</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://gityuan.com/2015/11/01/binder-driver/">http://gityuan.com/2015/11/01/binder-driver/</a></li>
+<li><a target="_blank" rel="noopener" href="http://gityuan.com/2015/11/02/binder-driver-2/">http://gityuan.com/2015/11/02/binder-driver-2/</a></li>
+<li><a target="_blank" rel="noopener" href="http://gityuan.com/2015/11/07/binder-start-sm/">http://gityuan.com/2015/11/07/binder-start-sm/</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/boot-orangepi3lts-from-h6-android9.0-sdk/" rel="prev" title="使用全志H6 Android9.0 SDK启动OrangePi 3 LTS">
+      <i class="fa fa-chevron-left"></i> 使用全志H6 Android9.0 SDK启动OrangePi 3 LTS
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/07/proxy/" rel="next" title="常用软件的代理设置方法">
+      常用软件的代理设置方法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#binder%E8%AE%BE%E5%A4%87%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">binder设备使用方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">代码结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.</span> <span class="nav-text">设备驱动初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#open%E5%87%BD%E6%95%B0"><span class="nav-number">4.</span> <span class="nav-text">open函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap%E5%87%BD%E6%95%B0"><span class="nav-number">5.</span> <span class="nav-text">mmap函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ioctl%E5%87%BD%E6%95%B0"><span class="nav-number">6.</span> <span class="nav-text">ioctl函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BINDER-SET-CONTEXT-MGR"><span class="nav-number">6.1.</span> <span class="nav-text">BINDER_SET_CONTEXT_MGR</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BINDER-WRITE-READ"><span class="nav-number">6.2.</span> <span class="nav-text">BINDER_WRITE_READ</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#binder-thread-write"><span class="nav-number">6.2.1.</span> <span class="nav-text">binder_thread_write()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#binder-thread-read"><span class="nav-number">6.2.2.</span> <span class="nav-text">binder_thread_read()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Binder%E5%8D%8F%E8%AE%AE"><span class="nav-number">7.</span> <span class="nav-text">Binder协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E5%86%8CService"><span class="nav-number">7.1.</span> <span class="nav-text">注册Service</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96service"><span class="nav-number">7.2.</span> <span class="nav-text">获取service</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pkemb"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">pkemb</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">49</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/pkemb" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;pkemb" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:pkemb@outlook.com" title="E-Mail → mailto:pkemb@outlook.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">湘ICP备2021012928号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pkemb</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">239k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:37</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : 'f46a55be4b1f1411ba22',
+      clientSecret: '68eee1bc3bd649a399bde3be81cd73aa43dd7a79',
+      repo        : 'pkemb.github.io',
+      owner       : 'pkemb',
+      admin       : ['pkemb'],
+      id          : '56e6e19e6a269a68f55adc5fa8b05d6d',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
